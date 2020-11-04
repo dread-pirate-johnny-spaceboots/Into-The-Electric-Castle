@@ -1,0 +1,17 @@
+00001  0000             DEFM       WAITFORRASTER
+00002  0001             RASTERLOOP 
+00003  0001                        LDA /1
+00004  0001                        CMP RASTER_LINE
+00005  0001                        BNE RASTERLOOP
+00006  0001             ENDM
+00007  0001             
+
+******* 0 Label(s) *******
+
+******* 0 Unused label(s) *******
+
+******* 1 Variable(s) *******
+tgt_c64  = $0001
+******* 1 Unused variables(s) *******
+tgt_c64
+

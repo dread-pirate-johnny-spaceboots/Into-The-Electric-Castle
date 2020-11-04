@@ -1,0 +1,60 @@
+00001  0000             ; 10 SYS (2064)
+00002  0001             
+00003  0001             *=$0801
+00004  0801             
+00005  0801  0E 08 0A              BYTE    $0E, $08, $0A, $00, $9E, $20, $28,  $32, $30, $36, $34, $29, $00, $00, $00
+00006  0810             
+00007  0810             ; SCREEN
+00008  0810             BORDER_COLOUR = $D020
+00009  0810             BG_COLOUR  = $D021
+00010  0810             RASTER_LINE = $D012
+00011  0810             
+00012  0810             ; BUILTIN SUBROUTINES
+00013  0810             CHAROUT    = $FFD2
+00014  0810             
+00015  0810             DEFM       WAITFORRASTER
+00016  0810             RASTERLOOP 
+00017  0810                        LDA /1
+00018  0810                        CMP RASTER_LINE
+00019  0810                        BNE RASTERLOOP
+00020  0810             ENDM
+00021  0810             
+00022  0810             *=$0810
+00023  0810  A2 00                 LDX #00
+00024  0812  8E 20 D0              STX BORDER_COLOUR
+00025  0815  8E 21 D0              STX BG_COLOUR
+00026  0818  20 26 08              JSR CLEARSCREEN
+00027  081B             GAMELOOP
+00028  081B             
+00029  081B             
+00030  081B             RASTERLOOP 
+00031  081B  A9 FF                 LDA #255
+00032  081D  CD 12 D0              CMP RASTER_LINE
+00033  0820  D0 F9                 BNE RASTERLOOP
+00034  0822  4C 1B 08              JMP GAMELOOP
+00035  0825  60                    RTS
+00036  0826             
+00037  0826             CLEARSCREEN 
+00038  0826  A9 93                 LDA #147
+00039  0828  20 D2 FF              JSR CHAROUT
+00040  082B  60                    RTS
+00041  082C             
+
+******* 3 Label(s) *******
+ClearScreen = $0826 
+GameLoop = $081B 
+rasterloop = $081B 
+
+******* 1 Unused label(s) *******
+ClearScreen
+
+******* 5 Variable(s) *******
+BG_COLOUR  = $D021
+BORDER_COLOUR  = $D020
+CharOut  = $FFD2
+RASTER_LINE  = $D012
+tgt_c64  = $0001
+******* 2 Unused variables(s) *******
+RASTER_LINE
+tgt_c64
+
