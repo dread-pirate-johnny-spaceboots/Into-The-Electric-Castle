@@ -5,3 +5,7 @@ RASTER_LINE = $D012
 
 ; Builtin Subroutines
 CharOut = $FFD2
+
+; Joystick
+JOYSTICK_PORT1 = $DC01
+JOYSTICK_PORT2 = $DC00

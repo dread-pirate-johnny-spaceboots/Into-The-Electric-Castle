@@ -16,6 +16,7 @@ incasm "Data.asm"
         jsr ClearScreen
 GameLoop
         WaitForRaster #255
+        jsr ReadJoystick
         jmp GameLoop
         rts
 

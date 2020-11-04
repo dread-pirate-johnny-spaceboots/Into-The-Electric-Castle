@@ -12,49 +12,116 @@
 00012  0810             ; BUILTIN SUBROUTINES
 00013  0810             CHAROUT    = $FFD2
 00014  0810             
-00015  0810             DEFM       WAITFORRASTER
-00016  0810             RASTERLOOP 
-00017  0810                        LDA /1
-00018  0810                        CMP RASTER_LINE
-00019  0810                        BNE RASTERLOOP
-00020  0810             ENDM
-00021  0810             
-00022  0810             *=$0810
-00023  0810  A2 00                 LDX #00
-00024  0812  8E 20 D0              STX BORDER_COLOUR
-00025  0815  8E 21 D0              STX BG_COLOUR
-00026  0818  20 26 08              JSR CLEARSCREEN
-00027  081B             GAMELOOP
-00028  081B             
-00029  081B             
-00030  081B             RASTERLOOP 
-00031  081B  A9 FF                 LDA #255
-00032  081D  CD 12 D0              CMP RASTER_LINE
-00033  0820  D0 F9                 BNE RASTERLOOP
-00034  0822  4C 1B 08              JMP GAMELOOP
-00035  0825  60                    RTS
-00036  0826             
-00037  0826             CLEARSCREEN 
-00038  0826  A9 93                 LDA #147
-00039  0828  20 D2 FF              JSR CHAROUT
-00040  082B  60                    RTS
-00041  082C             
+00015  0810             ; JOYSTICK
+00016  0810             JOYSTICK_PORT1 = $DC01
+00017  0810             JOYSTICK_PORT2 = $DC00
+00018  0810             
+00019  0810             DEFM       WAITFORRASTER
+00020  0810             RASTERLOOP 
+00021  0810                        LDA /1
+00022  0810                        CMP RASTER_LINE
+00023  0810                        BNE RASTERLOOP
+00024  0810             ENDM
+00025  0810             ; JOYSTICK
+00026  0810             JOYSTICK_INPUT = $02
+00027  0810             JOYSTICK_MASK_RIGHT = %00001000
+00028  0810             JOYSTICK_MASK_LEFT = %00000100
+00029  0810             JOYSTICK_MASK_UP = %00000001
+00030  0810             JOYSTICK_MASK_DOWN = %00000010
+00031  0810             JOYSTICK_MASK_BTN = %00010000
+00032  0810             
+00033  0810             *=$0810
+00034  0810  A2 00                 LDX #00
+00035  0812  8E 20 D0              STX BORDER_COLOUR
+00036  0815  8E 21 D0              STX BG_COLOUR
+00037  0818  20 29 08              JSR CLEARSCREEN
+00038  081B             GAMELOOP
+00039  081B             
+00040  081B             
+00041  081B             RASTERLOOP 
+00042  081B  A9 FF                 LDA #255
+00043  081D  CD 12 D0              CMP RASTER_LINE
+00044  0820  D0 F9                 BNE RASTERLOOP
+00045  0822  20 2F 08              JSR READJOYSTICK
+00046  0825  4C 1B 08              JMP GAMELOOP
+00047  0828  60                    RTS
+00048  0829             
+00049  0829             CLEARSCREEN 
+00050  0829  A9 93                 LDA #147
+00051  082B  20 D2 FF              JSR CHAROUT
+00052  082E  60                    RTS
+00053  082F             
+00054  082F             READJOYSTICK 
+00055  082F                        ;LDY #0
+00056  082F  84 02                 STY JOYSTICK_INPUT
+00057  0831  AD 00 DC              LDA JOYSTICK_PORT2
+00058  0834  29 08                 AND #JOYSTICK_MASK_RIGHT
+00059  0836  F0 1D                 BEQ @INPUTRIGHT
+00060  0838  AD 00 DC              LDA JOYSTICK_PORT2
+00061  083B  29 04                 AND #JOYSTICK_MASK_LEFT
+00062  083D  F0 1B                 BEQ @INPUTLEFT
+00063  083F  AD 00 DC              LDA JOYSTICK_PORT2
+00064  0842  29 01                 AND #JOYSTICK_MASK_UP
+00065  0844  F0 19                 BEQ @INPUTUP
+00066  0846  AD 00 DC              LDA JOYSTICK_PORT2
+00067  0849  29 02                 AND #JOYSTICK_MASK_DOWN
+00068  084B  F0 17                 BEQ @INPUTDOWN
+00069  084D  AD 00 DC              LDA JOYSTICK_PORT2
+00070  0850  29 10                 AND #JOYSTICK_MASK_BTN
+00071  0852  F0 15                 BEQ @INPUTBTN
+00072  0854  60                    RTS
+00073  0855             @INPUTRIGHT 
+00074  0855  A0 04                 LDY #4
+00075  0857  84 02                 STY JOYSTICK_INPUT
+00076  0859  60                    RTS
+00077  085A             @INPUTLEFT 
+00078  085A  A0 10                 LDY #16
+00079  085C  84 02                 STY JOYSTICK_INPUT
+00080  085E  60                    RTS
+00081  085F             @INPUTUP
+00082  085F  A0 02                 LDY #2
+00083  0861  84 02                 STY JOYSTICK_INPUT
+00084  0863  60                    RTS
+00085  0864             @INPUTDOWN 
+00086  0864  A0 08                 LDY #8
+00087  0866  84 02                 STY JOYSTICK_INPUT
+00088  0868  60                    RTS
+00089  0869             @INPUTBTN
+00090  0869  A0 01                 LDY #1
+00091  086B  84 02                 STY JOYSTICK_INPUT
+00092  086D  60                    RTS
+00093  086E             
 
-******* 3 Label(s) *******
-ClearScreen = $0826 
+******* 4 Label(s) *******
+ClearScreen = $0829 
 GameLoop = $081B 
 rasterloop = $081B 
+ReadJoystick = $082F 
 
 ******* 1 Unused label(s) *******
+@InputBtn
+@InputDown
+@InputLeft
+@InputRight
+@InputUp
 ClearScreen
 
-******* 5 Variable(s) *******
+******* 13 Variable(s) *******
 BG_COLOUR  = $D021
 BORDER_COLOUR  = $D020
 CharOut  = $FFD2
+JOYSTICK_INPUT  = $0002
+JOYSTICK_MASK_BTN  = $0010
+JOYSTICK_MASK_DOWN  = $0002
+JOYSTICK_MASK_LEFT  = $0004
+JOYSTICK_MASK_RIGHT  = $0008
+JOYSTICK_MASK_UP  = $0001
+JOYSTICK_PORT1  = $DC01
+JOYSTICK_PORT2  = $DC00
 RASTER_LINE  = $D012
 tgt_c64  = $0001
-******* 2 Unused variables(s) *******
+******* -2 Unused variables(s) *******
+JOYSTICK_PORT1
 RASTER_LINE
 tgt_c64
 
