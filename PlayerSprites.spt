@@ -315,6 +315,76 @@
       <data>0</data>
     </sdata>
    </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>15360</data>
+      <data>9216</data>
+      <data>140352</data>
+      <data>74880</data>
+      <data>39168</data>
+      <data>32256</data>
+      <data>15360</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>9216</data>
+      <data>16896</data>
+      <data>33024</data>
+      <data>196800</data>
+      <data>0</data>
+      <data>0</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>69760</data>
+      <data>55552</data>
+      <data>1113920</data>
+      <data>1622848</data>
+      <data>940768</data>
+      <data>875184</data>
+      <data>449400</data>
+      <data>485088</data>
+      <data>1016192</data>
+      <data>639872</data>
+      <data>1205888</data>
+      <data>58944</data>
+      <data>222464</data>
+      <data>9536</data>
+      <data>190400</data>
+      <data>121792</data>
+      <data>241144</data>
+      <data>1009392</data>
+      <data>1886000</data>
+      <data>503792</data>
+      <data>557320</data>
+    </sdata>
+   </sprite>
     <!-- Scratchpad data -->
     <ScratchpadData>
         <MaxSprites>0</MaxSprites>

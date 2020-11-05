@@ -286,64 +286,15 @@ DrawLevel
         rts
 
 
-PerformBackgroundCollisionDetection
+CheckForWallCollision
         lda SPRITE_BG_COLLISION
         cmp #%00000001
         bne @Continue
-        jsr @CheckRight
-        jsr @CheckLeft
-        jsr @CheckDown
-        jsr @CheckUp
-        jsr UpdatePlayerSpritePosition 
+        ldx PLAYER_DYING_COUNTER
+        inx
+        stx PLAYER_DYING_COUNTER
+        lda PLAYER_DYING_ANIM1
+        sta PLAYER_SPRITE_INDEX
 @Continue
         rts
-@CheckRight
-        lda JOYSTICK_INPUT
-        and PLAYER_MOVED_RIGHT
-        bne @PushLeft 
-        rts
-@PushLeft
-        ldx PLAYER_X
-        dex
-        dex
-        stx PLAYER_X
-        rts
-@CheckLeft
-        lda JOYSTICK_INPUT
-        and PLAYER_MOVED_LEFT
-        bne @PushRight
-        rts
-@PushRight
-        ldx PLAYER_X
-        inx
-        inx
-        stx PLAYER_X
-        rts
-@CheckDown
-        lda JOYSTICK_INPUT
-        and PLAYER_MOVED_DOWN
-        bne @PushUp
-        rts
-@PushUp
-        ldx PLAYER_Y
-        dex
-        dex
-        dex
-        dex
-        stx PLAYER_Y
-        rts
-@CheckUp
-        lda JOYSTICK_INPUT
-        and PLAYER_MOVED_UP
-        bne @PushDown
-        rts
-@PushDown
-        ldx PLAYER_Y
-        inx
-        inx
-        inx
-        inx
-        inx
-        inx
-        stx PLAYER_Y
-        rts
+
