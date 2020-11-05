@@ -50,7 +50,7 @@
     <DetermineBuildOrder>0</DetermineBuildOrder>
     <PaddingByte>0</PaddingByte>
     <!--Screen designer settings-->
-    <AssyBinaryFileLocation>C:\Projects\c64\MoveCTRL\Level1.bin</AssyBinaryFileLocation>
+    <AssyBinaryFileLocation>C:\Projects\c64\MoveCTRL\Title.bin</AssyBinaryFileLocation>
     <AssyExportList />
     <!--End of screen designer settings-->
     <SourceFiles>
@@ -141,6 +141,17 @@
             <Bookmarks />
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>Title.sdd</Name>
+            <PrgName />
+            <FileType>9</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>False</FileOpen>
         </SourceFile>
     </SourceFiles>
 </Project>

@@ -250,51 +250,33 @@ InitCharacterSet
         rts
 
 DrawLevel
-        ldx #0
-@Block1
-        lda LEVEL1_BLOCK1,x
-        tay
-        sta SCREEN_BLOCK1,x
-        inx
-        cpx #255
-        bne @Block1
-        ldx #0
-@Block2
-        lda LEVEL1_BLOCK2,x
-        tay
-        sta SCREEN_BLOCK2,x
-        inx
-        cpx #255
-        bne @Block2
-        ldx #0
-@Block3
-        lda LEVEL1_BLOCK3,x
-        tay
-        sta SCREEN_BLOCK3,x
-        inx
-        cpx #255
-        bne @Block3
-        ldx #0
-@Block4
-        lda LEVEL1_BLOCK4,x
-        tay
-        sta SCREEN_BLOCK4,x
-        inx
-        cpx #255
-        bne @Block4
-        ldx #0
+        DrawScreen LEVEL1_BLOCK1,LEVEL1_BLOCK2,LEVEL1_BLOCK3,LEVEL1_BLOCK4
         rts
 
+DrawTitle
+        DrawScreen TITLE_BLOCK1,TITLE_BLOCK2,TITLE_BLOCK3,TITLE_BLOCK4
+        rts
 
 CheckForWallCollision
         lda SPRITE_BG_COLLISION
         cmp #%00000001
         bne @Continue
+        jsr KillPlayer
+@Continue
+        rts
+
+KillPlayer
         ldx PLAYER_DYING_COUNTER
         inx
         stx PLAYER_DYING_COUNTER
         lda PLAYER_DYING_ANIM1
         sta PLAYER_SPRITE_INDEX
-@Continue
+        ldx PLAYER_LIVES
+        dex
+        stx PLAYER_LIVES
         rts
 
+InitPlayerState
+        ldx #5
+        stx PLAYER_LIVES
+        rts

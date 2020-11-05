@@ -12,6 +12,9 @@ incbin "PlayerSprites.bin"
 *=CHARSET
 incbin "LevelGeo.bin"
 
+*=TITLE_BLOCK1
+incbin "Title.bin"
+
 *=LEVEL1_BLOCK1
 incbin "Level1.bin"
 
@@ -25,9 +28,20 @@ incasm "Data.asm"
         ldx COLOUR_BLACK
         stx BG_COLOUR
         jsr ClearScreen
+        jsr DrawTitle
+        ;jsr InitSprites
+        jsr InitCharacterSet
+        jsr InitPlayerState
+TitleLoop
+        jsr ReadJoystick
+        lda JOYSTICK_INPUT
+        and PLAYER_ACTION
+        bne InitGame
+        jmp TitleLoop
+InitGame
+        jsr ClearScreen
         jsr DrawLevel
         jsr InitSprites
-        jsr InitCharacterSet
 GameLoop
         WaitForRaster #255
         lda PLAYER_DYING_COUNTER
@@ -45,7 +59,7 @@ GameLoop
         jsr UpdatePlayerSprite
         ldx PLAYER_DYING_COUNTER
         cpx #64
-        beq @DisablePlayer
+        beq @CheckLives
         inx
         stx PLAYER_DYING_COUNTER
         lda PLAYER_SPRITE_INDEX
@@ -59,9 +73,27 @@ GameLoop
         stx PLAYER_SPRITE_INDEX
         jmp GameLoop
         rts
-@DisablePlayer
-        EnableSprites #%00000000
+@CheckLives
+        ldx PLAYER_LIVES
+        cpx #0
+        beq @GotoTitle
+@Respawn
+        ldx #$50
+        stx PLAYER_X
+        ldx #$64
+        stx PLAYER_Y
+        ldx #0
+        stx PLAYER_DYING_COUNTER
         jmp GameLoop
+@GotoTitle
+        EnableSprites #%00000000
+        jsr ClearScreen
+        jsr DrawTitle
+        ldx #5
+        stx PLAYER_LIVES
+        ldx #0
+        stx PLAYER_DYING_COUNTER
+        jmp TitleLoop
 @Exit
         rts
 incasm "Subroutines.asm"
