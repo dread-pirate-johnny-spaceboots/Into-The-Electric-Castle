@@ -223,9 +223,64 @@ InitSprites
         PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
+        ldx #$50
+        stx PLAYER_X
+        ldy #$64
+        sty PLAYER_Y
         jsr UpdatePlayerSpritePosition
         rts
 
 UpdatePlayerSprite
         PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
+        rts
+
+InitCharacterSet
+        lda CHARSET_LOOKUP
+        ora #$0e
+        sta CHARSET_LOOKUP
+        lda SCREEN_CONTROL
+        ora #%00010000
+        sta SCREEN_CONTROL
+        lda COLOUR_LIGHT_BLUE
+        sta BG_COLOUR1
+        lda COLOUR_WHITE
+        sta BG_COLOUR2
+        lda COLOUR_RED
+        sta BG_COLOUR3
+        rts
+
+DrawLevel
+        ldx #0
+@Block1
+        lda LEVEL1_BLOCK1,x
+        tay
+        sta SCREEN_BLOCK1,x
+        inx
+        cpx #255
+        bne @Block1
+        ldx #0
+@Block2
+        lda LEVEL1_BLOCK2,x
+        tay
+        sta SCREEN_BLOCK2,x
+        inx
+        cpx #255
+        bne @Block2
+        ldx #0
+@Block3
+        lda LEVEL1_BLOCK3,x
+        tay
+        sta SCREEN_BLOCK3,x
+        inx
+        cpx #255
+        bne @Block3
+        ldx #0
+@Block4
+        lda LEVEL1_BLOCK4,x
+        tay
+        sta SCREEN_BLOCK4,x
+        inx
+        cpx #255
+        bne @Block4
+        ldx #0
         rts

@@ -11,16 +11,24 @@ incasm "MemoryMap.asm"
 *=SPRITE0_DATA
 incbin "PlayerSprites.bin" 
 
+*=CHARSET
+incbin "LevelGeo.bin"
+
+*=LEVEL1_BLOCK1
+incbin "Level1.bin"
+
 incasm "Macros.asm"
 incasm "Data.asm"
 
 *=$0820
         ldx #00
         stx BORDER_COLOUR
-        ldx COLOUR_CYAN
+        ldx COLOUR_BLACK
         stx BG_COLOUR
         jsr ClearScreen
+        jsr DrawLevel
         jsr InitSprites
+        jsr InitCharacterSet
 GameLoop
         WaitForRaster #255
         jsr ReadJoystick
