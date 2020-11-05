@@ -7,49 +7,75 @@ ClearScreen
 ReadJoystick
         ldy #0
         sty JOYSTICK_INPUT
+        jsr @CheckRight
+        jsr @CheckLeft
+        jsr @CheckUp
+        jsr @CheckDown
+        jsr @CheckBtn
+        rts
+@CheckRight
         lda JOYSTICK_PORT2
         and #JOYSTICK_MASK_RIGHT
         beq @InputRight
+        rts
+@InputRight
+        lda JOYSTICK_INPUT
+        ora #4
+        sta JOYSTICK_INPUT
+        rts
+@CheckLeft
         lda JOYSTICK_PORT2
         and #JOYSTICK_MASK_LEFT
         beq @InputLeft
+        rts
+@InputLeft
+        lda JOYSTICK_INPUT
+        ora #16
+        sta JOYSTICK_INPUT
+        rts
+@CheckUp
         lda JOYSTICK_PORT2
         and #JOYSTICK_MASK_UP
         beq @InputUp
+        rts
+@InputUp
+        lda JOYSTICK_INPUT
+        ora #2
+        sta JOYSTICK_INPUT
+        rts
+@CheckDown
         lda JOYSTICK_PORT2
         and #JOYSTICK_MASK_DOWN
         beq @InputDown
+        rts
+@CheckBtn
         lda JOYSTICK_PORT2
         and #JOYSTICK_MASK_BTN
         beq @InputBtn
         rts
-@InputRight
-        ldy #4
-        sty JOYSTICK_INPUT
-        rts
-@InputLeft
-        ldy #16
-        sty JOYSTICK_INPUT
-        rts
-@InputUp
-        ldy #2
-        sty JOYSTICK_INPUT
-        rts
 @InputDown
-        ldy #8
-        sty JOYSTICK_INPUT
+        lda JOYSTICK_INPUT
+        ora #8
+        sta JOYSTICK_INPUT
         rts
 @InputBtn
-        ldy #1
-        sty JOYSTICK_INPUT
+        lda JOYSTICK_INPUT
+        ora #1
+        sta JOYSTICK_INPUT
         rts
 #endregion
 
 #region Move Player
 MovePlayer
+        jsr @CheckUp
+        jsr @CheckDown
+        jsr @CheckLeft
+        jsr @CheckRight
+        rts
+@CheckUp
         lda JOYSTICK_INPUT
-        cmp PLAYER_MOVED_UP
-        bne @CheckRight
+        and PLAYER_MOVED_UP
+        beq @Continue
         ldy PLAYER_Y
         dey
         sty PLAYER_Y
@@ -58,8 +84,8 @@ MovePlayer
         rts
 @CheckRight
         lda JOYSTICK_INPUT
-        cmp PLAYER_MOVED_RIGHT
-        bne @CheckDown
+        and PLAYER_MOVED_RIGHT
+        beq @Continue
         ldx PLAYER_X
         inx
         stx PLAYER_X
@@ -71,26 +97,26 @@ MovePlayer
         beq @CheckWrap 
         ldx PLAYER_X
         cpx #255
-        bne @ContRight
+        bne @Continue
         lda SPRITE_OVERFLOW
         ora #%00000001
         sta SPRITE_OVERFLOW
         sta PLAYER_X
         rts
-@ContRight
+@Continue
         rts
 @CheckWrap
         ldx PLAYER_X
         cpx #80
-        bne @ContRight
+        bne @Continue
         ldx #0
         stx PLAYER_X
         stx SPRITE_OVERFLOW
         rts
 @CheckDown
         lda JOYSTICK_INPUT
-        cmp PLAYER_MOVED_DOWN
-        bne @CheckLeft
+        and PLAYER_MOVED_DOWN
+        beq @Continue
         ldy PLAYER_Y
         iny
         sty PLAYER_Y
@@ -99,8 +125,8 @@ MovePlayer
         rts
 @CheckLeft
         lda JOYSTICK_INPUT
-        cmp PLAYER_MOVED_LEFT
-        bne @CheckButton
+        and PLAYER_MOVED_LEFT
+        beq @Continue
         ldx PLAYER_X
         dex
         stx PLAYER_X
@@ -113,30 +139,20 @@ MovePlayer
         lda SPRITE_OVERFLOW
         ldx PLAYER_X
         cpx #0
-        bne @ContLeft
+        bne @Continue
         lda #%00000001
         sta SPRITE_OVERFLOW
         lda #80
         sta PLAYER_X
-@ContLeft
         rts
 @CheckLeftWrap
         ldx PLAYER_X
         cpx #0
-        bne @ContLeft
+        bne @Continue
         ldx #%00000000
         stx SPRITE_OVERFLOW
         ldx #255
         stx PLAYER_X
-        rts
-@CheckButton
-        lda JOYSTICK_INPUT
-        cmp PLAYER_ACTION
-        bne @Idle
-        rts
-@Idle
-        ldx PLAYER_IDLE
-        stx PLAYER_SPRITE_INDEX
         rts
 #endregion
 
