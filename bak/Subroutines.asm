@@ -79,6 +79,8 @@ MovePlayer
         ldy PLAYER_Y
         dey
         sty PLAYER_Y
+        ldx PLAYER_UP
+        stx PLAYER_SPRITE_INDEX
         rts
 @CheckRight
         lda JOYSTICK_INPUT
@@ -87,6 +89,8 @@ MovePlayer
         ldx PLAYER_X
         inx
         stx PLAYER_X
+        ldx PLAYER_RIGHT
+        stx PLAYER_SPRITE_INDEX
         ;Right side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -116,6 +120,8 @@ MovePlayer
         ldy PLAYER_Y
         iny
         sty PLAYER_Y
+        ldx PLAYER_DOWN
+        stx PLAYER_SPRITE_INDEX
         rts
 @CheckLeft
         lda JOYSTICK_INPUT
@@ -124,6 +130,8 @@ MovePlayer
         ldx PLAYER_X
         dex
         stx PLAYER_X
+        ldx PLAYER_LEFT
+        stx PLAYER_SPRITE_INDEX
         ; Left side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -148,69 +156,6 @@ MovePlayer
         rts
 #endregion
 
-#region Update Player Animation Frame
-UpdatePlayerAnimationFrame
-        lda JOYSTICK_INPUT
-        and PLAYER_MOVED_RIGHT
-        bne @SetRight
-        lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_LEFT
-        bne @SetLeft
-        lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_UP
-        bne @SetUp
-        lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_DOWN
-        bne @SetDown
-        ldx PLAYER_IDLE
-        stx PLAYER_SPRITE_INDEX
-        rts
-@SetRight
-        ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_RIGHT_ANIM2
-        beq @RightFrame1
-        ldx PLAYER_RIGHT_ANIM2
-        stx PLAYER_SPRITE_INDEX
-        rts
-@RightFrame1
-        ldx PLAYER_RIGHT_ANIM1
-        stx PLAYER_SPRITE_INDEX
-        rts
-@SetLeft
-        ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_LEFT_ANIM2
-        beq @LeftFrame1
-        ldx PLAYER_LEFT_ANIM2
-        stx PLAYER_SPRITE_INDEX
-        rts
-@LeftFrame1
-        ldx PLAYER_LEFT_ANIM1
-        stx PLAYER_SPRITE_INDEX
-        rts
-@SetUp
-        ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_UP_ANIM2
-        beq @UpFrame1
-        ldx PLAYER_UP_ANIM2
-        stx PLAYER_SPRITE_INDEX
-        rts
-@UpFrame1
-        ldx PLAYER_UP_ANIM1
-        stx PLAYER_SPRITE_INDEX
-        rts
-@SetDown
-        ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_DOWN_ANIM2
-        beq @DownFrame1
-        ldx PLAYER_DOWN_ANIM2
-        stx PLAYER_SPRITE_INDEX
-        rts
-@DownFrame1
-        ldx PLAYER_DOWN_ANIM1
-        stx PLAYER_SPRITE_INDEX
-        rts
-#endregion
-
 UpdatePlayerSpritePosition
         lda PLAYER_X
         sta SPRITE0_X
@@ -224,8 +169,4 @@ InitSprites
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
         jsr UpdatePlayerSpritePosition
-        rts
-
-UpdatePlayerSprite
-        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
         rts

@@ -9,7 +9,7 @@
 incasm "MemoryMap.asm"
 
 *=SPRITE0_DATA
-incbin "PlayerSprites.bin"
+incbin "PlayerSprites.bin" 
 
 incasm "Macros.asm"
 incasm "Data.asm"
@@ -24,8 +24,10 @@ incasm "Data.asm"
 GameLoop
         WaitForRaster #255
         jsr ReadJoystick
+        jsr UpdatePlayerAnimationFrame
         jsr MovePlayer
         jsr UpdatePlayerSpritePosition
+        jsr UpdatePlayerSprite                
         jmp GameLoop
         rts
 

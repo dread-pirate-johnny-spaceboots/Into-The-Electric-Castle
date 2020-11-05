@@ -22,10 +22,8 @@ incasm "Data.asm"
 GameLoop
         WaitForRaster #255
         jsr ReadJoystick
-        jsr UpdatePlayerAnimationFrame
         jsr MovePlayer
         jsr UpdatePlayerSpritePosition
-        jsr UpdatePlayerSprite                
         jmp GameLoop
         rts
 
