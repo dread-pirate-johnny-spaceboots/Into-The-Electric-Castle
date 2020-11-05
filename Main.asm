@@ -33,7 +33,8 @@ GameLoop
         jsr UpdatePlayerAnimationFrame
         jsr MovePlayer
         jsr UpdatePlayerSpritePosition
-        jsr UpdatePlayerSprite                
+        jsr UpdatePlayerSprite     
+        jsr PerformBackgroundCollisionDetection
         jmp GameLoop
         rts
 
