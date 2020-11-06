@@ -49,20 +49,30 @@ InitGame
         
 GameLoop
         WaitForRaster #255
+        ldx #0
+        stx PLAYER_MOVED_THIS_FRAME
         lda PLAYER_DYING_COUNTER
         cmp #0
         bne @HandleDying
         jsr ReadJoystick
         jsr UpdatePlayerAnimationFrame
+        jsr UpdatePlayerSprite
         jsr MovePlayer
-        jsr UpdatePlayerSpritePosition
-        jsr UpdatePlayerSprite     
+        jsr UpdatePlayerSpritePosition     
         jsr CheckForWallCollision
         lda PLAYER_LIVES
         ora #48
         sta PLAYER_LIVES_POSITION
+        lda PLAYER_MOVED_THIS_FRAME
+        cmp #$1
+        bne @HandleAction
         jmp GameLoop
         rts
+@HandleAction
+        jsr ReadJoystick1
+        jsr HandleAction
+        jsr UpdatePlayerSprite
+        jmp GameLoop
 @HandleDying
         jsr PlayZap
         jsr UpdatePlayerSprite
@@ -89,12 +99,14 @@ GameLoop
 @Respawn
         ldx #0
         stx SPRITE_OVERFLOW
-        ldx #$50
+        ldx #$4a
         stx PLAYER_X
-        ldx #$64
+        ldx #$5e
         stx PLAYER_Y
         ldx #0
         stx PLAYER_DYING_COUNTER
+        ldx PLAYER_IDLE
+        stx PLAYER_SPRITE_INDEX
         jmp GameLoop
 @GameOver
         jsr ClearScreen
@@ -129,7 +141,8 @@ NextLevel
         EnableSprites #%00000000
         lda COLOUR_WHITE
         sta TEXT_COLOUR
-        PrintStr FT_LEVEL1,#$f2
+        PrintStr FT_LEVEL1,#$fa
+        ldx PLAYER_LIVES
         jmp TitleLoop
 @Exit
         rts
@@ -137,11 +150,11 @@ NextLevel
 incasm "Subroutines.asm"
 
 ; Flavour Text
-FT_LEVEL1 text 'How insignificant the mere mortal to be dwarfed by the majesty of this electric edifice. As you are now you may meander here forever. Free your mind from anger and aggression. Resist its treacherous allure and succomb to antagonistic notions.'
+FT_LEVEL1 text 'How insignificant the mere mortal who is dwarfed by the majesty of this electric edifice. As you are now you may meander here forever. Free your mind from anger and aggression. Resist its treacherous allure as you succumb to its antagonistic notions.'
           byte 00
-FT_LEVEL2 text 'There is danger ahead, but do not be afraid. For I am with you, as water, as air, as breath itself. Be resolute. There are trials ahead... and rewards for those who strive.'
+FT_LEVEL2 text 'There is danger ahead, but do not be afraid. For I am with you, as water, as air, as breath itself in this place of no time and no space. Be resolute. There are trials ahead... and rewards for those who strive. The Surreal Search endures...'
           byte 00
-FT_LEVEL9 text 'At last you enter the nuclear portals of psychogenesis. Here in this vast hall where even shadows fear the light you must confront your past. If you have killed beware the gathering of spirits for here the disembodied astral world becomes flesh once more.'
+FT_LEVEL9 text 'At last you enter the nuclear portals of Psychogenesis. Here in this vast hall where even shadows fear the light you must confront your past. If you have killed beware the gathering of spirits for here the disembodied astral world becomes flesh once more.'
           byte 00
-FT_GAMEOVER text 'The experiment is over. I grow weary. So tired. Let the dream of confusion lead you into the virgin light. Be all-seeing, be brave. Begone!'
+FT_GAMEOVER text 'The experiment is over. I grow weary. So tired. Let the dream of confusion lead you into the virgin light. Be all seeing, be brave. Begone!'
             byte 00

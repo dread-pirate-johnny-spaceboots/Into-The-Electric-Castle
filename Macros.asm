@@ -65,9 +65,6 @@ defm PrintStr
         lda #255
         cmp RASTER_LINE
         bne @loop
-        ;iny
-        ;cpy #2
-        ;bne @loop
         lda /1,x
         sta $0400,x
         inx

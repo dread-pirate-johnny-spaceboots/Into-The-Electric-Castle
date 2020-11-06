@@ -63,6 +63,66 @@ ReadJoystick
         ora #1
         sta JOYSTICK_INPUT
         rts
+
+ReadJoystick1
+        ldy #0
+        sty JOYSTICK_INPUT1
+        jsr @CheckRight
+        jsr @CheckLeft
+        jsr @CheckUp
+        jsr @CheckDown
+        jsr @CheckBtn
+        rts
+@CheckRight
+        lda JOYSTICK_PORT1
+        and #JOYSTICK_MASK_RIGHT
+        beq @InputRight
+        rts
+@InputRight
+        lda JOYSTICK_INPUT1
+        ora #4
+        sta JOYSTICK_INPUT1
+        rts
+@CheckLeft
+        lda JOYSTICK_PORT1
+        and #JOYSTICK_MASK_LEFT
+        beq @InputLeft
+        rts
+@InputLeft
+        lda JOYSTICK_INPUT1
+        ora #16
+        sta JOYSTICK_INPUT1
+        rts
+@CheckUp
+        lda JOYSTICK_PORT1
+        and #JOYSTICK_MASK_UP
+        beq @InputUp
+        rts
+@InputUp
+        lda JOYSTICK_INPUT1
+        ora #2
+        sta JOYSTICK_INPUT1
+        rts
+@CheckDown
+        lda JOYSTICK_PORT1
+        and #JOYSTICK_MASK_DOWN
+        beq @InputDown
+        rts
+@CheckBtn
+        lda JOYSTICK_PORT1
+        and #JOYSTICK_MASK_BTN
+        beq @InputBtn
+        rts
+@InputDown
+        lda JOYSTICK_INPUT1
+        ora #8
+        sta JOYSTICK_INPUT1
+        rts
+@InputBtn
+        lda JOYSTICK_INPUT1
+        ora #1
+        sta JOYSTICK_INPUT1
+        rts
 #endregion
 
 #region Move Player
@@ -79,6 +139,8 @@ MovePlayer
         ldy PLAYER_Y
         dey
         sty PLAYER_Y
+        ldy #$1
+        sty PLAYER_MOVED_THIS_FRAME
         jsr PlayFootstep
         rts
 @CheckRight
@@ -88,6 +150,8 @@ MovePlayer
         ldx PLAYER_X
         inx
         stx PLAYER_X
+        ldy #$1
+        sty PLAYER_MOVED_THIS_FRAME
         jsr PlayFootstep
         ;Right side wrap
         lda SPRITE_OVERFLOW
@@ -119,6 +183,8 @@ MovePlayer
         ldy PLAYER_Y
         iny
         sty PLAYER_Y
+        ldy #$1
+        sty PLAYER_MOVED_THIS_FRAME
         jsr PlayFootstep
         rts
 @CheckLeft
@@ -128,6 +194,8 @@ MovePlayer
         ldx PLAYER_X
         dex
         stx PLAYER_X
+        ldy #$1
+        sty PLAYER_MOVED_THIS_FRAME
         jsr PlayFootstep
         ; Left side wrap
         lda SPRITE_OVERFLOW
@@ -228,9 +296,9 @@ InitSprites
         PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
-        ldx #$50
+        ldx #$4a
         stx PLAYER_X
-        ldy #$64
+        ldy #$5e
         sty PLAYER_Y
         jsr UpdatePlayerSpritePosition
         rts
@@ -282,7 +350,7 @@ KillPlayer
         rts
 
 InitPlayerState
-        ldx #5
+        ldx #9
         stx PLAYER_LIVES
         rts
 
@@ -295,3 +363,62 @@ PlayZap
         PlaySound #25,#0,#40,#22,#7
         rts
 #endregion
+
+HandleAction
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_UP
+        bne @ShootUp
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_DOWN
+        bne @ShootDown
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_LEFT
+        bne @ShootLeft
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_RIGHT
+        bne @ShootRight
+        rts
+@ShootUp
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_RIGHT
+        bne @ShootUpRight
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_LEFT
+        bne @ShootUpLeft
+        lda PLAYER_SHOOT_N
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootUpRight
+        lda PLAYER_SHOOT_NE
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootUpLeft
+        lda PLAYER_SHOOT_NW
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootDown
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_RIGHT
+        bne @ShootDownRight
+        lda JOYSTICK_INPUT1
+        and PLAYER_MOVED_LEFT
+        bne @ShootDownLeft
+        lda PLAYER_SHOOT_S
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootDownRight
+        lda PLAYER_SHOOT_SE
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootDownLeft
+        lda PLAYER_SHOOT_SW
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootLeft
+        lda PLAYER_SHOOT_W
+        sta PLAYER_SPRITE_INDEX
+        rts
+@ShootRight
+        lda PLAYER_SHOOT_E
+        sta PLAYER_SPRITE_INDEX
+        rts
