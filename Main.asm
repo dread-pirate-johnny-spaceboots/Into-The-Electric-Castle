@@ -29,7 +29,6 @@ incasm "Data.asm"
         stx BG_COLOUR
         jsr ClearScreen
         jsr DrawTitle
-        ;jsr InitSprites
         jsr InitCharacterSet
         jsr InitPlayerState
 TitleLoop
@@ -39,9 +38,14 @@ TitleLoop
         bne InitGame
         jmp TitleLoop
 InitGame
+        ldx COLOUR_BLACK
+        stx BG_COLOUR
+        ldx COLOUR_LIGHT_BLUE
+        stx TEXT_COLOUR
         jsr ClearScreen
         jsr DrawLevel
         jsr InitSprites
+        
 GameLoop
         WaitForRaster #255
         lda PLAYER_DYING_COUNTER
@@ -56,6 +60,7 @@ GameLoop
         jmp GameLoop
         rts
 @HandleDying
+        jsr PlayZap
         jsr UpdatePlayerSprite
         ldx PLAYER_DYING_COUNTER
         cpx #64
@@ -78,6 +83,8 @@ GameLoop
         cpx #0
         beq @GotoTitle
 @Respawn
+        ldx #0
+        stx SPRITE_OVERFLOW
         ldx #$50
         stx PLAYER_X
         ldx #$64
@@ -94,6 +101,20 @@ GameLoop
         ldx #0
         stx PLAYER_DYING_COUNTER
         jmp TitleLoop
+NextLevel
+        jsr ClearScreen
+        EnableSprites #%00000000
+        lda COLOUR_WHITE
+        sta TEXT_COLOUR
+        PrintStr FT_LEVEL1,#$cf
+        jmp TitleLoop
 @Exit
         rts
+
 incasm "Subroutines.asm"
+
+; Flavour Text
+FT_LEVEL1 text 'How insignificant this mere mortal to be dwarfed by the majesty of its electric edifice. As you are now you may well meander here eternally. Resist its treacherous allure and succomb to antagonistic notions.'
+          byte 00
+FT_LEVEL2 text 'There is danger ahead, but do not be afraid. For I am with you. Be resolute! There are trials ahead...'
+          byte 00

@@ -51,3 +51,43 @@ defm DrawScreen
         ldx #0
         rts
 endm
+
+defm PrintChar
+        lda /1
+        jsr CharOut
+        rts
+endm
+
+defm PrintStr
+        ldx #0
+        ldy #0
+@loop
+        lda #255
+        cmp RASTER_LINE
+        bne @loop
+        ;iny
+        ;cpy #2
+        ;bne @loop
+        lda /1,x
+        sta $0400,x
+        inx
+        cpx /2
+        bne @loop
+endm
+
+defm PlaySound
+        lda /1
+        sta SID_VOLUME
+        lda /2
+        sta SID_VOICE1_LO_FREQ
+        lda /3
+        sta SID_VOICE1_HI_FREQ
+        lda /4
+        sta SID_ATTACK_DECAY
+        lda /5
+        sta SID_SUSTAIN
+        lda #0
+        sta SID_VOICE1_CONTROL
+        lda #129
+        sta SID_VOICE1_CONTROL
+endm

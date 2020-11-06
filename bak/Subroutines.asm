@@ -79,8 +79,6 @@ MovePlayer
         ldy PLAYER_Y
         dey
         sty PLAYER_Y
-        ldx PLAYER_UP
-        stx PLAYER_SPRITE_INDEX
         rts
 @CheckRight
         lda JOYSTICK_INPUT
@@ -89,8 +87,6 @@ MovePlayer
         ldx PLAYER_X
         inx
         stx PLAYER_X
-        ldx PLAYER_RIGHT
-        stx PLAYER_SPRITE_INDEX
         ;Right side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -109,9 +105,11 @@ MovePlayer
         ldx PLAYER_X
         cpx #80
         bne @Continue
+        
         ldx #0
         stx PLAYER_X
         stx SPRITE_OVERFLOW
+        jsr NextLevel
         rts
 @CheckDown
         lda JOYSTICK_INPUT
@@ -120,8 +118,6 @@ MovePlayer
         ldy PLAYER_Y
         iny
         sty PLAYER_Y
-        ldx PLAYER_DOWN
-        stx PLAYER_SPRITE_INDEX
         rts
 @CheckLeft
         lda JOYSTICK_INPUT
@@ -130,8 +126,6 @@ MovePlayer
         ldx PLAYER_X
         dex
         stx PLAYER_X
-        ldx PLAYER_LEFT
-        stx PLAYER_SPRITE_INDEX
         ; Left side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -156,6 +150,69 @@ MovePlayer
         rts
 #endregion
 
+#region Update Player Animation Frame
+UpdatePlayerAnimationFrame
+        lda JOYSTICK_INPUT
+        and PLAYER_MOVED_RIGHT
+        bne @SetRight
+        lda JOYSTICK_INPUT        
+        and PLAYER_MOVED_LEFT
+        bne @SetLeft
+        lda JOYSTICK_INPUT        
+        and PLAYER_MOVED_UP
+        bne @SetUp
+        lda JOYSTICK_INPUT        
+        and PLAYER_MOVED_DOWN
+        bne @SetDown
+        ldx PLAYER_IDLE
+        stx PLAYER_SPRITE_INDEX
+        rts
+@SetRight
+        ldx PLAYER_SPRITE_INDEX
+        cpx PLAYER_RIGHT_ANIM2
+        beq @RightFrame1
+        ldx PLAYER_RIGHT_ANIM2
+        stx PLAYER_SPRITE_INDEX
+        rts
+@RightFrame1
+        ldx PLAYER_RIGHT_ANIM1
+        stx PLAYER_SPRITE_INDEX
+        rts
+@SetLeft
+        ldx PLAYER_SPRITE_INDEX
+        cpx PLAYER_LEFT_ANIM2
+        beq @LeftFrame1
+        ldx PLAYER_LEFT_ANIM2
+        stx PLAYER_SPRITE_INDEX
+        rts
+@LeftFrame1
+        ldx PLAYER_LEFT_ANIM1
+        stx PLAYER_SPRITE_INDEX
+        rts
+@SetUp
+        ldx PLAYER_SPRITE_INDEX
+        cpx PLAYER_UP_ANIM2
+        beq @UpFrame1
+        ldx PLAYER_UP_ANIM2
+        stx PLAYER_SPRITE_INDEX
+        rts
+@UpFrame1
+        ldx PLAYER_UP_ANIM1
+        stx PLAYER_SPRITE_INDEX
+        rts
+@SetDown
+        ldx PLAYER_SPRITE_INDEX
+        cpx PLAYER_DOWN_ANIM2
+        beq @DownFrame1
+        ldx PLAYER_DOWN_ANIM2
+        stx PLAYER_SPRITE_INDEX
+        rts
+@DownFrame1
+        ldx PLAYER_DOWN_ANIM1
+        stx PLAYER_SPRITE_INDEX
+        rts
+#endregion
+
 UpdatePlayerSpritePosition
         lda PLAYER_X
         sta SPRITE0_X
@@ -168,5 +225,60 @@ InitSprites
         PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
+        ldx #$50
+        stx PLAYER_X
+        ldy #$64
+        sty PLAYER_Y
         jsr UpdatePlayerSpritePosition
+        rts
+
+UpdatePlayerSprite
+        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
+        rts
+
+InitCharacterSet
+        lda CHARSET_LOOKUP
+        ora #$0e
+        sta CHARSET_LOOKUP
+        lda SCREEN_CONTROL
+        ora #%00010000
+        sta SCREEN_CONTROL
+        lda COLOUR_LIGHT_BLUE
+        sta BG_COLOUR1
+        lda COLOUR_WHITE
+        sta BG_COLOUR2
+        lda COLOUR_RED
+        sta BG_COLOUR3
+        rts
+
+DrawLevel
+        DrawScreen LEVEL1_BLOCK1,LEVEL1_BLOCK2,LEVEL1_BLOCK3,LEVEL1_BLOCK4
+        rts
+
+DrawTitle
+        DrawScreen TITLE_BLOCK1,TITLE_BLOCK2,TITLE_BLOCK3,TITLE_BLOCK4
+        rts
+
+CheckForWallCollision
+        lda SPRITE_BG_COLLISION
+        cmp #%00000001
+        bne @Continue
+        jsr KillPlayer
+@Continue
+        rts
+
+KillPlayer
+        ldx PLAYER_DYING_COUNTER
+        inx
+        stx PLAYER_DYING_COUNTER
+        lda PLAYER_DYING_ANIM1
+        sta PLAYER_SPRITE_INDEX
+        ldx PLAYER_LIVES
+        dex
+        stx PLAYER_LIVES
+        rts
+
+InitPlayerState
+        ldx #5
+        stx PLAYER_LIVES
         rts

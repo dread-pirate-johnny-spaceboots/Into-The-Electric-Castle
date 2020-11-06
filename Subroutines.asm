@@ -79,6 +79,7 @@ MovePlayer
         ldy PLAYER_Y
         dey
         sty PLAYER_Y
+        jsr PlayFootstep
         rts
 @CheckRight
         lda JOYSTICK_INPUT
@@ -87,6 +88,7 @@ MovePlayer
         ldx PLAYER_X
         inx
         stx PLAYER_X
+        jsr PlayFootstep
         ;Right side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -108,6 +110,7 @@ MovePlayer
         ldx #0
         stx PLAYER_X
         stx SPRITE_OVERFLOW
+        jsr NextLevel
         rts
 @CheckDown
         lda JOYSTICK_INPUT
@@ -116,6 +119,7 @@ MovePlayer
         ldy PLAYER_Y
         iny
         sty PLAYER_Y
+        jsr PlayFootstep
         rts
 @CheckLeft
         lda JOYSTICK_INPUT
@@ -124,6 +128,7 @@ MovePlayer
         ldx PLAYER_X
         dex
         stx PLAYER_X
+        jsr PlayFootstep
         ; Left side wrap
         lda SPRITE_OVERFLOW
         cmp #%00000001
@@ -280,3 +285,13 @@ InitPlayerState
         ldx #5
         stx PLAYER_LIVES
         rts
+
+#region Sound
+PlayFootstep
+        PlaySound #4,#0,#128,#128,#1
+        rts
+
+PlayZap
+        PlaySound #25,#0,#40,#22,#7
+        rts
+#endregion
