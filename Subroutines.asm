@@ -275,7 +275,7 @@ KillPlayer
         inx
         stx PLAYER_DYING_COUNTER
         lda PLAYER_DYING_ANIM1
-        sta PLAYER_SPRITE_INDEX
+        sta PLAYER_SPRITE_INDEX 
         ldx PLAYER_LIVES
         dex
         stx PLAYER_LIVES
