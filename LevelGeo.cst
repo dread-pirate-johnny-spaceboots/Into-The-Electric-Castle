@@ -501,4 +501,43 @@
       <data>60</data>
     </chardata>
   </character>
+  <character>
+    <charcode>124</charcode>
+    <chardata>
+      <data>0</data>
+      <data>187</data>
+      <data>187</data>
+      <data>170</data>
+      <data>106</data>
+      <data>104</data>
+      <data>20</data>
+      <data>20</data>
+    </chardata>
+  </character>
+  <character>
+    <charcode>126</charcode>
+    <chardata>
+      <data>20</data>
+      <data>105</data>
+      <data>125</data>
+      <data>109</data>
+      <data>105</data>
+      <data>29</data>
+      <data>5</data>
+      <data>20</data>
+    </chardata>
+  </character>
+  <character>
+    <charcode>127</charcode>
+    <chardata>
+      <data>0</data>
+      <data>0</data>
+      <data>255</data>
+      <data>87</data>
+      <data>96</data>
+      <data>64</data>
+      <data>64</data>
+      <data>0</data>
+    </chardata>
+  </character>
 </charset>

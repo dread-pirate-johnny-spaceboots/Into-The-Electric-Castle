@@ -9,6 +9,9 @@ incasm "MemoryMap.asm"
 *=SPRITE0_DATA
 incbin "PlayerSprites.bin" 
 
+*=SPRITE1_DATA
+incbin "Bullet.bin"
+
 *=CHARSET
 incbin "LevelGeo.bin"
 
@@ -60,6 +63,7 @@ GameLoop
         jsr MovePlayer
         jsr UpdatePlayerSpritePosition     
         jsr CheckForWallCollision
+        jsr CheckForActionChange
         lda PLAYER_LIVES
         ora #48
         sta PLAYER_LIVES_POSITION

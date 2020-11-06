@@ -169,7 +169,7 @@ MovePlayer
         rts
 @CheckWrap
         ldx PLAYER_X
-        cpx #80
+        cpx #48
         bne @Continue
         ldx #0
         stx PLAYER_X
@@ -291,11 +291,21 @@ UpdatePlayerSpritePosition
         sta SPRITE0_Y
         rts
 
+UpdatePlayerBulletPosition
+        lda PLAYER_BULLET_X
+        sta SPRITE1_X
+        lda PLAYER_BULLET_Y
+        sta SPRITE1_Y
+        rts
+
 InitSprites
         EnableSprites #%00000001
-        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
+        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_POINTER
+        PointToSpriteData PLAYER_BULLET_SPRITE_INDEX,SPRITE1_POINTER
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
+        lda COLOUR_RED
+        sta SPRITE1_COLOUR
         ldx #$4a
         stx PLAYER_X
         ldy #$5e
@@ -304,7 +314,11 @@ InitSprites
         rts
 
 UpdatePlayerSprite
-        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_SHAPEDATA
+        PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_POINTER
+        rts
+
+UpdatePlayerBulletSprite
+        PointToSpriteData PLAYER_BULLET_SPRITE_INDEX,SPRITE1_POINTER
         rts
 
 InitCharacterSet
@@ -352,6 +366,8 @@ KillPlayer
 InitPlayerState
         ldx #9
         stx PLAYER_LIVES
+        ldx PLAYER_ACTION_SHOOT
+        stx PLAYER_CURRENT_ACTION
         rts
 
 #region Sound
@@ -365,6 +381,7 @@ PlayZap
 #endregion
 
 HandleAction
+        jsr CheckForActionChange
         lda JOYSTICK_INPUT1
         and PLAYER_MOVED_UP
         bne @ShootUp
@@ -421,4 +438,74 @@ HandleAction
 @ShootRight
         lda PLAYER_SHOOT_E
         sta PLAYER_SPRITE_INDEX
+        rts
+
+CheckForActionChange
+        lda JOYSTICK_INPUT
+        and PLAYER_ACTION
+        bne @UpdateAction
+        rts
+@UpdateAction
+        jsr ResetActionSelector
+        lda PLAYER_CURRENT_ACTION
+        cmp PLAYER_ACTION_SHOOT
+        beq SetActionTalk
+        cmp PLAYER_ACTION_TALK
+        beq SetActionUse
+        cmp PLAYER_ACTION_USE
+        beq SetActionShoot
+        rts
+SetActionShoot
+        ldx PLAYER_ACTION_SHOOT
+        stx PLAYER_CURRENT_ACTION
+        jsr ResetActionSelector
+        ldx BOX_SELECTOR_TL
+        stx ACTION_SELECTOR_POS1
+        ldx BOX_SELECTOR_TR
+        stx ACTION_SELECTOR_POS2
+        ldx BOX_SELECTOR_BL
+        stx ACTION_SELECTOR_POS3
+        ldx BOX_SELECTOR_BR
+        stx ACTION_SELECTOR_POS4
+        rts
+SetActionTalk
+        ldx PLAYER_ACTION_TALK
+        stx PLAYER_CURRENT_ACTION
+        jsr ResetActionSelector
+        ldx BOX_SELECTOR_TL
+        stx ACTION_SELECTOR_POS5
+        ldx BOX_SELECTOR_TR
+        stx ACTION_SELECTOR_POS6
+        ldx BOX_SELECTOR_BL
+        stx ACTION_SELECTOR_POS7
+        ldx BOX_SELECTOR_BR
+        stx ACTION_SELECTOR_POS8
+        rts
+SetActionUse
+        ldx PLAYER_ACTION_USE
+        stx PLAYER_CURRENT_ACTION
+        jsr ResetActionSelector
+        ldx BOX_SELECTOR_TL
+        stx ACTION_SELECTOR_POS9
+        ldx BOX_SELECTOR_TR
+        stx ACTION_SELECTOR_POS10
+        ldx BOX_SELECTOR_BL
+        stx ACTION_SELECTOR_POS11
+        ldx BOX_SELECTOR_BR
+        stx ACTION_SELECTOR_POS12
+        rts
+ResetActionSelector
+        ldx #32
+        stx ACTION_SELECTOR_POS1
+        stx ACTION_SELECTOR_POS2
+        stx ACTION_SELECTOR_POS3
+        stx ACTION_SELECTOR_POS4
+        stx ACTION_SELECTOR_POS5
+        stx ACTION_SELECTOR_POS6
+        stx ACTION_SELECTOR_POS7
+        stx ACTION_SELECTOR_POS8
+        stx ACTION_SELECTOR_POS9
+        stx ACTION_SELECTOR_POS10
+        stx ACTION_SELECTOR_POS11
+        stx ACTION_SELECTOR_POS12
         rts

@@ -8,6 +8,21 @@ endm
 defm EnableSprites
         lda /1
         sta SPRITE_ENABLED
+        
+endm
+
+defm EnableSprite
+        lda SPRITE_ENABLED
+        ora /1
+        sta SPRITE_ENABLED
+        rts
+endm
+
+defm DisableSprite
+        lda SPRITE_ENABLED
+        and /1
+        sta SPRITE_ENABLED
+        rts
 endm
 
 defm PointToSpriteData
