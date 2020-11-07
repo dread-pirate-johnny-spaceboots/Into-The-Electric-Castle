@@ -366,10 +366,17 @@ KillPlayer
         ldx PLAYER_LIVES
         dex
         stx PLAYER_LIVES
+        jsr DestroyBullet
         rts
 
 DestroyBullet
-        DisableSprite #%00000010
+        ;DisableSprite #%11111101
+        lda PLAYER_BULLET_EXPLOSION_COUNTER
+        cmp #0
+        bne @cont
+        lda #1
+        sta PLAYER_BULLET_EXPLOSION_COUNTER
+@cont
         rts
 
 InitPlayerState
@@ -634,6 +641,11 @@ CheckForAction
         jsr UpdatePlayerBulletSprite
         rts
 @process
+        lda PLAYER_BULLET_EXPLOSION_COUNTER
+        cmp #0
+        beq @continueProcessing
+        rts
+@continueProcessing
         lda PLAYER_BULLET_DIRECTION
         cmp PLAYER_SHOOT_N
         beq @MoveBulletN
@@ -719,4 +731,58 @@ CheckForAction
         sty PLAYER_BULLET_Y
         lda PLAYER_BULLET_NWSE
         sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+
+HandleBulletExplosion
+        ldx PLAYER_BULLET_EXPLOSION_COUNTER
+        cpx #0
+        beq @Cont
+        jsr PlayZap
+        inx
+        stx PLAYER_BULLET_EXPLOSION_COUNTER
+        cpx #2
+        beq @Frame1
+        cpx #6
+        beq @Frame2
+        cpx #12
+        beq @Frame3
+        cpx #18
+        beq @Frame4
+        cpx #24
+        beq @Frame5
+        cpx #32
+        beq @Destroy
+        rts
+@Frame1
+        lda PLAYER_BULLET_EXPLOSION1
+        sta PLAYER_BULLET_SPRITE_INDEX
+        jsr UpdatePlayerBulletSprite
+        rts
+@Frame2
+        lda PLAYER_BULLET_EXPLOSION2
+        sta PLAYER_BULLET_SPRITE_INDEX
+        jsr UpdatePlayerBulletSprite
+        rts
+@Frame3
+        lda PLAYER_BULLET_EXPLOSION3
+        sta PLAYER_BULLET_SPRITE_INDEX
+        jsr UpdatePlayerBulletSprite
+        rts
+@Frame4
+        lda PLAYER_BULLET_EXPLOSION4
+        sta PLAYER_BULLET_SPRITE_INDEX
+        jsr UpdatePlayerBulletSprite
+        rts
+@Frame5
+        lda PLAYER_BULLET_EXPLOSION5
+        sta PLAYER_BULLET_SPRITE_INDEX
+        jsr UpdatePlayerBulletSprite
+        rts
+@Destroy
+        lda #0
+        sta PLAYER_BULLET_EXPLOSION_COUNTER
+        DisableSprite #%11111101
+        lda PLAYER_BULLET_HORI
+        sta PLAYER_BULLET_SPRITE_INDEX
+@Cont
         rts

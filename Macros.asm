@@ -19,7 +19,7 @@ endm
 
 defm DisableSprite
         lda SPRITE_ENABLED
-        eor /1
+        and /1
         sta SPRITE_ENABLED
 endm
 

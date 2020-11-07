@@ -27,6 +27,7 @@ incasm "Data.asm"
 *=$0820
         ldx #00
         stx BORDER_COLOUR
+        stx PLAYER_BULLET_EXPLOSION_COUNTER
         ldx #1
         stx PLAYER_DYING_COUNTER
         ldx COLOUR_BLACK
@@ -62,6 +63,7 @@ GameLoop
         jsr UpdatePlayerSpritePosition    
         jsr CheckForWallCollision
         jsr UpdatePlayerBulletPosition
+        jsr HandleBulletExplosion
         lda PLAYER_LIVES
         ora #48
         sta PLAYER_LIVES_POSITION

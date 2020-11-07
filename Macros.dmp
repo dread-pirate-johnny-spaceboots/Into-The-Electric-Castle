@@ -19,7 +19,7 @@
 00019  0001             
 00020  0001             DEFM       DISABLESPRITE
 00021  0001                        LDA SPRITE_ENABLED
-00022  0001                        EOR /1
+00022  0001                        AND /1
 00023  0001                        STA SPRITE_ENABLED
 00024  0001             ENDM
 00025  0001             
