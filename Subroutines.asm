@@ -351,8 +351,9 @@ DrawTitle
 CheckForWallCollision
         lda SPRITE_BG_COLLISION
         cmp #%00000001
-        bne @Continue
-        jsr KillPlayer
+        beq KillPlayer
+        cmp #%00000010
+        beq DestroyBullet
 @Continue
         rts
 
@@ -365,6 +366,10 @@ KillPlayer
         ldx PLAYER_LIVES
         dex
         stx PLAYER_LIVES
+        rts
+
+DestroyBullet
+        DisableSprite #%00000010
         rts
 
 InitPlayerState
