@@ -308,9 +308,12 @@ InitSprites
         sta SPRITE1_COLOUR
         ldx #$4a
         stx PLAYER_X
+        stx PLAYER_BULLET_X
         ldy #$5e
         sty PLAYER_Y
+        stx PLAYER_BULLET_Y
         jsr UpdatePlayerSpritePosition
+        jsr UpdatePlayerBulletPosition
         rts
 
 UpdatePlayerSprite
@@ -368,20 +371,28 @@ InitPlayerState
         stx PLAYER_LIVES
         ldx PLAYER_ACTION_SHOOT
         stx PLAYER_CURRENT_ACTION
+        ldx #0
+        stx PLAYER_ACTION_SWITCH_COOLDOWN
         rts
 
 #region Sound
 PlayFootstep
-        PlaySound #4,#0,#128,#128,#1
+        PlaySound #4,#0,#128,#128,#1,#65
         rts
 
 PlayZap
-        PlaySound #25,#0,#40,#22,#7
+        PlaySound #25,#0,#40,#22,#7,#129
+        rts
+
+PlayLaser
+        PlaySound #25,#20,#44,#88,#3,#33
         rts
 #endregion
 
 HandleAction
-        jsr CheckForActionChange
+        jsr CheckForSelectedActionChange
+        jsr CheckForAction
+        jsr ReadJoystick1
         lda JOYSTICK_INPUT1
         and PLAYER_MOVED_UP
         bne @ShootUp
@@ -403,15 +414,22 @@ HandleAction
         and PLAYER_MOVED_LEFT
         bne @ShootUpLeft
         lda PLAYER_SHOOT_N
+        sta PLAYER_BULLET_DIRECTION
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_VERT
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootUpRight
         lda PLAYER_SHOOT_NE
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_SWNE
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootUpLeft
         lda PLAYER_SHOOT_NW
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_NWSE
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootDown
         lda JOYSTICK_INPUT1
@@ -422,30 +440,74 @@ HandleAction
         bne @ShootDownLeft
         lda PLAYER_SHOOT_S
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_VERT
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootDownRight
         lda PLAYER_SHOOT_SE
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_NWSE
+        sta PLAYER_BULLET_SPRITE_INDEX        
         rts
 @ShootDownLeft
         lda PLAYER_SHOOT_SW
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_SWNE
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootLeft
         lda PLAYER_SHOOT_W
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_HORI
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootRight
         lda PLAYER_SHOOT_E
         sta PLAYER_SPRITE_INDEX
+        lda PLAYER_BULLET_HORI
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts
-
-CheckForActionChange
+CheckForSelectedActionChange
         lda JOYSTICK_INPUT
         and PLAYER_ACTION
         bne @UpdateAction
         rts
 @UpdateAction
+        ldx PLAYER_ACTION_SWITCH_COOLDOWN
+        inx 
+        stx PLAYER_ACTION_SWITCH_COOLDOWN
+        cpx #1
+        beq @ProcessActionUpdate
+        cpx #16
+        beq @ProcessActionUpdate
+        cpx #32
+        beq @ProcessActionUpdate
+        cpx #48
+        beq @ProcessActionUpdate
+        cpx #64
+        beq @ProcessActionUpdate
+        cpx #80
+        beq @ProcessActionUpdate
+        cpx #96
+        beq @ProcessActionUpdate
+        cpx #110
+        beq @ProcessActionUpdate
+        cpx #128
+        beq @ProcessActionUpdate
+        cpx #142
+        beq @ProcessActionUpdate
+        cpx #160
+        beq @ProcessActionUpdate
+        cpx #176
+        beq @ProcessActionUpdate
+        cpx #198
+        beq @ProcessActionUpdate
+        cpx #214
+        beq @ProcessActionUpdate
+        cpx #230
+        beq @ProcessActionUpdate
+        rts
+@ProcessActionUpdate
         jsr ResetActionSelector
         lda PLAYER_CURRENT_ACTION
         cmp PLAYER_ACTION_SHOOT
@@ -508,4 +570,28 @@ ResetActionSelector
         stx ACTION_SELECTOR_POS10
         stx ACTION_SELECTOR_POS11
         stx ACTION_SELECTOR_POS12
+        rts
+CheckForAction
+        lda SPRITE_ENABLED
+        and #%00000010
+        beq @ActionCanProceed
+        rts
+@ActionCanProceed
+        jsr ReadJoystick
+        lda JOYSTICK_INPUT
+        and PLAYER_ACTION
+        beq @ActCont
+        jsr @Shoot
+        rts
+@ActCont
+        rts
+@Shoot
+        jsr PlayLaser
+        ldx PLAYER_X
+        stx PLAYER_BULLET_X        
+        ldy PLAYER_Y
+        sty PLAYER_BULLET_Y
+        EnableSprite #%00000010
+        jsr UpdatePlayerBulletPosition
+        jsr UpdatePlayerBulletSprite
         rts

@@ -15,14 +15,12 @@ defm EnableSprite
         lda SPRITE_ENABLED
         ora /1
         sta SPRITE_ENABLED
-        rts
 endm
 
 defm DisableSprite
         lda SPRITE_ENABLED
         and /1
         sta SPRITE_ENABLED
-        rts
 endm
 
 defm PointToSpriteData
@@ -100,6 +98,6 @@ defm PlaySound
         sta SID_SUSTAIN
         lda #0
         sta SID_VOICE1_CONTROL
-        lda #129
+        lda /6
         sta SID_VOICE1_CONTROL
 endm
