@@ -49,7 +49,6 @@ InitGame
         jsr ClearScreen
         jsr DrawLevel
         jsr InitSprites
-        
 GameLoop
         WaitForRaster #255
         ldx #0
@@ -57,25 +56,25 @@ GameLoop
         lda PLAYER_DYING_COUNTER
         cmp #0
         bne @HandleDying
-        jsr ReadJoystick
         jsr UpdatePlayerAnimationFrame
         jsr UpdatePlayerSprite
         jsr MovePlayer
-        jsr UpdatePlayerSpritePosition     
+        jsr UpdatePlayerSpritePosition    
         jsr CheckForWallCollision
+        jsr UpdatePlayerBulletPosition
         lda PLAYER_LIVES
         ora #48
         sta PLAYER_LIVES_POSITION
         lda PLAYER_MOVED_THIS_FRAME
         cmp #$1
         bne @HandleAction
+        jsr CheckForAction ; Handles moving the bullet in cases where no action was processes. TODO: Rename
         jmp GameLoop
         rts
+
 @HandleAction
         jsr ReadJoystick1
         jsr HandleAction
-        lda PLAYER_SPRITE_INDEX
-        sta PLAYER_BULLET_DIRECTION
         jsr UpdatePlayerSprite
         jmp GameLoop
 @HandleDying

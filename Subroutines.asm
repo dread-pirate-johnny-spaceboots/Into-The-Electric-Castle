@@ -127,6 +127,7 @@ ReadJoystick1
 
 #region Move Player
 MovePlayer
+        jsr ReadJoystick
         jsr @CheckUp
         jsr @CheckDown
         jsr @CheckLeft
@@ -389,7 +390,35 @@ PlayLaser
         rts
 #endregion
 
+UpdateLastAimDir
+        lda PLAYER_SPRITE_INDEX
+        cmp PLAYER_SHOOT_N
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_E
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_S
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_W
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_NE
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_NW
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_SE
+        beq @SetAimDir
+        cmp PLAYER_SHOOT_SW
+        beq @SetAimDir
+        rts
+@SetAimDir
+        lda PLAYER_SPRITE_INDEX
+        sta PLAYER_BULLET_DIRECTION
+        rts
+
 HandleAction
+        jsr @process
+        jsr UpdateLastAimDir
+        rts
+@process
         jsr CheckForSelectedActionChange
         jsr CheckForAction
         jsr ReadJoystick1
@@ -414,7 +443,6 @@ HandleAction
         and PLAYER_MOVED_LEFT
         bne @ShootUpLeft
         lda PLAYER_SHOOT_N
-        sta PLAYER_BULLET_DIRECTION
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_VERT
         sta PLAYER_BULLET_SPRITE_INDEX
@@ -575,6 +603,7 @@ CheckForAction
         lda SPRITE_ENABLED
         and #%00000010
         beq @ActionCanProceed
+        jsr @MoveBullet
         rts
 @ActionCanProceed
         jsr ReadJoystick
@@ -593,5 +622,96 @@ CheckForAction
         sty PLAYER_BULLET_Y
         EnableSprite #%00000010
         jsr UpdatePlayerBulletPosition
+        ;jsr UpdatePlayerBulletSprite
+        rts
+@MoveBullet
+        jsr @process
         jsr UpdatePlayerBulletSprite
+        rts
+@process
+        lda PLAYER_BULLET_DIRECTION
+        cmp PLAYER_SHOOT_N
+        beq @MoveBulletN
+        cmp PLAYER_SHOOT_E
+        beq @MoveBulletE
+        cmp PLAYER_SHOOT_S
+        beq @MoveBulletS
+        cmp PLAYER_SHOOT_W
+        beq @MoveBulletW
+        cmp PLAYER_SHOOT_NE
+        beq @MoveBulletNE
+        cmp PLAYER_SHOOT_NW
+        beq @MoveBulletNW
+        cmp PLAYER_SHOOT_SE
+        beq @MoveBulletSE
+        cmp PLAYER_SHOOT_SW
+        beq @MoveBulletSW
+        rts
+@MoveBulletN
+        ldy PLAYER_BULLET_Y
+        dey
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_VERT
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletE
+        ldy PLAYER_BULLET_X
+        iny
+        sty PLAYER_BULLET_X
+        lda PLAYER_BULLET_HORI
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletW
+        ldy PLAYER_BULLET_X
+        dey
+        sty PLAYER_BULLET_X
+        lda PLAYER_BULLET_HORI
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletS
+        ldy PLAYER_BULLET_Y
+        iny
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_VERT
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletNW
+        ldx PLAYER_BULLET_X
+        ldy PLAYER_BULLET_Y
+        dex
+        dey
+        stx PLAYER_BULLET_X
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_NWSE
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletNE
+        ldx PLAYER_BULLET_X
+        ldy PLAYER_BULLET_Y
+        inx
+        dey
+        stx PLAYER_BULLET_X
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_SWNE
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletSW
+        ldx PLAYER_BULLET_X
+        ldy PLAYER_BULLET_Y
+        dex
+        iny
+        stx PLAYER_BULLET_X
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_SWNE
+        sta PLAYER_BULLET_SPRITE_INDEX
+        rts
+@MoveBulletSE
+        ldx PLAYER_BULLET_X
+        ldy PLAYER_BULLET_Y
+        inx
+        iny
+        stx PLAYER_BULLET_X
+        sty PLAYER_BULLET_Y
+        lda PLAYER_BULLET_NWSE
+        sta PLAYER_BULLET_SPRITE_INDEX
         rts

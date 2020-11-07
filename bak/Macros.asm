@@ -8,6 +8,19 @@ endm
 defm EnableSprites
         lda /1
         sta SPRITE_ENABLED
+        
+endm
+
+defm EnableSprite
+        lda SPRITE_ENABLED
+        ora /1
+        sta SPRITE_ENABLED
+endm
+
+defm DisableSprite
+        lda SPRITE_ENABLED
+        and /1
+        sta SPRITE_ENABLED
 endm
 
 defm PointToSpriteData
@@ -65,16 +78,26 @@ defm PrintStr
         lda #255
         cmp RASTER_LINE
         bne @loop
-        iny
-        cpy #2
-        bne @loop
-        cmp 
         lda /1,x
-        cmp #0
-        beq @endloop
         sta $0400,x
         inx
-        jmp @loop
-@endloop
-        rts
+        cpx /2
+        bne @loop
+endm
+
+defm PlaySound
+        lda /1
+        sta SID_VOLUME
+        lda /2
+        sta SID_VOICE1_LO_FREQ
+        lda /3
+        sta SID_VOICE1_HI_FREQ
+        lda /4
+        sta SID_ATTACK_DECAY
+        lda /5
+        sta SID_SUSTAIN
+        lda #0
+        sta SID_VOICE1_CONTROL
+        lda /6
+        sta SID_VOICE1_CONTROL
 endm
