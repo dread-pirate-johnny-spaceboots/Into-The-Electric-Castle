@@ -12,6 +12,115 @@
     <expandx>False</expandx>
     <expandy>False</expandy>
     <sdata>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>4096</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>6144</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+      <data>6144</data>
+      <data>6144</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
       <data>0</data>
       <data>0</data>
       <data>0</data>
@@ -23,8 +132,74 @@
       <data>0</data>
       <data>0</data>
       <data>0</data>
-      <data>65280</data>
-      <data>65280</data>
+      <data>0</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>2048</data>
+      <data>6144</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>2048</data>
+      <data>6144</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>6144</data>
+      <data>2048</data>
+      <data>6144</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>16661567</data>
+      <data>16771071</data>
       <data>0</data>
       <data>0</data>
       <data>0</data>
@@ -55,48 +230,13 @@
       <data>0</data>
       <data>0</data>
       <data>0</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
-      <data>6144</data>
       <data>0</data>
       <data>0</data>
       <data>0</data>
+      <data>16531999</data>
+      <data>16761855</data>
       <data>0</data>
       <data>0</data>
-    </sdata>
-   </sprite>
-  <sprite>
-    <description></description>
-    <links></links>
-    <include>True</include>
-    <multi>False</multi>
-    <spbkgnd>1</spbkgnd>
-    <spcolour>0</spcolour>
-    <mcolour1>6</mcolour1>
-    <mcolour2>7</mcolour2>
-    <expandx>False</expandx>
-    <expandy>False</expandy>
-    <sdata>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>0</data>
-      <data>24576</data>
-      <data>28672</data>
-      <data>14336</data>
-      <data>7168</data>
-      <data>3584</data>
-      <data>1536</data>
       <data>0</data>
       <data>0</data>
       <data>0</data>
@@ -126,12 +266,82 @@
       <data>0</data>
       <data>0</data>
       <data>0</data>
-      <data>1536</data>
-      <data>3584</data>
-      <data>7168</data>
-      <data>14336</data>
-      <data>28672</data>
-      <data>24576</data>
+      <data>0</data>
+      <data>0</data>
+      <data>15794311</data>
+      <data>16711935</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>8912912</data>
+      <data>16252959</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+    </sdata>
+   </sprite>
+  <sprite>
+    <description></description>
+    <links></links>
+    <include>True</include>
+    <multi>False</multi>
+    <spbkgnd>1</spbkgnd>
+    <spcolour>0</spcolour>
+    <mcolour1>6</mcolour1>
+    <mcolour2>7</mcolour2>
+    <expandx>False</expandx>
+    <expandy>False</expandy>
+    <sdata>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>0</data>
+      <data>4194306</data>
+      <data>12582915</data>
+      <data>0</data>
+      <data>0</data>
       <data>0</data>
       <data>0</data>
       <data>0</data>

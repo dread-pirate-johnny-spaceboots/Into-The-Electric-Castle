@@ -46,1468 +46,2097 @@
 00046  0810             
 00047  0810             ; SPRITES
 00048  0810             SPRITE_ENABLED = $D015;
-00049  0810             SPRITE_OVERFLOW = $D010
-00050  0810             SPRITE_BG_COLLISION = $D01F
-00051  0810             
-00052  0810             SPRITE0_X  = $D000
-00053  0810             SPRITE0_Y  = $D001
-00054  0810             SPRITE0_COLOUR = $D027
-00055  0810             SPRITE0_DATA = $2000
-00056  0810             SPRITE0_POINTER = $07F8
-00057  0810             
-00058  0810             SPRITE1_X  = $D002
-00059  0810             SPRITE1_Y  = $D003
-00060  0810             SPRITE1_COLOUR = $D028
-00061  0810             SPRITE1_DATA = $24C0
-00062  0810             SPRITE1_POINTER = $07F9
-00063  0810             
-00064  0810             ; CHARACTER SET
-00065  0810             CHARSET=$3800 
-00066  0810             CHARSET_LOOKUP = $D018
-00067  0810             
-00068  0810             ; TITLE SCREEN
-00069  0810             TITLE_BLOCK1 = $5400
-00070  0810             TITLE_BLOCK2 = $54FF
-00071  0810             TITLE_BLOCK3 = $55FE
-00072  0810             TITLE_BLOCK4 = $56FD
-00073  0810             
-00074  0810             ; LEVELS
-00075  0810             LEVEL1_BLOCK1 = $5000
-00076  0810             LEVEL1_BLOCK2 = $50FF
-00077  0810             LEVEL1_BLOCK3 = $51FE
-00078  0810             LEVEL1_BLOCK4 = $52FD
-00079  0810             
-00080  0810             ; PLAYER
-00081  0810             PLAYER_DYING_COUNTER = $7000
-00082  0810             PLAYER_LIVES = $7001
-00083  0810             PLAYER_MOVED_THIS_FRAME = $7002
-00084  0810             PLAYER_CURRENT_ACTION = $7003
-00085  0810             PLAYER_ACTION_SWITCH_COOLDOWN = $7004
-00086  0810             PLAYER_BULLET_DIRECTION = $7005
-00087  0810             PLAYER_BULLET_EXPLOSION_COUNTER = $7006
-00088  0810             
-00089  0810             ; SOUND
-00090  0810             SID_VOICE1_LO_FREQ = $D400
-00091  0810             SID_VOICE1_HI_FREQ = $D401
-00092  0810             SID_VOICE1_CONTROL = $D404
-00093  0810             SID_ATTACK_DECAY = $D405
-00094  0810             SID_SUSTAIN = $D406
-00095  0810             SID_PULSE_LO_WIDTH = $D402
-00096  0810             SID_PULSE_HI_WIDTH = $D403
-00097  0810             SID_VOLUME = $D418
-00098  0810             
-00099  0810             *=SPRITE0_DATA 
-00100  2000             INCBIN     "PLAYERSPRITES.BIN"
-00101  24C0             
-00102  24C0             *=SPRITE1_DATA 
-00103  24C0             INCBIN     "BULLET.BIN"
-00104  2700             
-00105  2700             *=CHARSET
-00106  3800             INCBIN     "LEVELGEO.BIN"
-00107  4800             
-00108  4800             *=TITLE_BLOCK1 
-00109  5400             INCBIN     "TITLE.BIN"
-00110  57E8             
-00111  57E8             *=LEVEL1_BLOCK1 
-00112  5000             INCBIN     "LEVEL1.BIN"
-00113  53E8             
-00114  53E8             DEFM       WAITFORRASTER
-00115  53E8             RASTERLOOP 
-00116  53E8                        LDA /1
-00117  53E8                        CMP RASTER_LINE
-00118  53E8                        BNE RASTERLOOP
-00119  53E8             ENDM
-00120  53E8             
-00121  53E8             DEFM       ENABLESPRITES
-00122  53E8                        LDA /1
-00123  53E8                        STA SPRITE_ENABLED
-00124  53E8                        
-00125  53E8             ENDM
-00126  53E8             
-00127  53E8             DEFM       ENABLESPRITE
-00128  53E8                        LDA SPRITE_ENABLED
-00129  53E8                        ORA /1
-00130  53E8                        STA SPRITE_ENABLED
-00131  53E8             ENDM
-00132  53E8             
-00133  53E8             DEFM       DISABLESPRITE
-00134  53E8                        LDA SPRITE_ENABLED
-00135  53E8                        AND /1
-00136  53E8                        STA SPRITE_ENABLED
-00137  53E8             ENDM
-00138  53E8             
-00139  53E8             DEFM       POINTTOSPRITEDATA
-00140  53E8                        LDA /1
-00141  53E8                        STA /2
-00142  53E8             ENDM
-00143  53E8             
-00144  53E8             DEFM       DRAWSCREEN
-00145  53E8                        LDX #0
-00146  53E8             @BLOCK1
-00147  53E8                        LDA /1,X
-00148  53E8                        TAY
-00149  53E8                        STA SCREEN_BLOCK1,X
-00150  53E8                        INX
-00151  53E8                        CPX #255
-00152  53E8                        BNE @BLOCK1
-00153  53E8                        LDX #0
-00154  53E8             @BLOCK2
-00155  53E8                        LDA /2,X
-00156  53E8                        TAY
-00157  53E8                        STA SCREEN_BLOCK2,X
-00158  53E8                        INX
-00159  53E8                        CPX #255
-00160  53E8                        BNE @BLOCK2
-00161  53E8                        LDX #0
-00162  53E8             @BLOCK3
-00163  53E8                        LDA /3,X
-00164  53E8                        TAY
-00165  53E8                        STA SCREEN_BLOCK3,X
-00166  53E8                        INX
-00167  53E8                        CPX #255
-00168  53E8                        BNE @BLOCK3
-00169  53E8                        LDX #0
-00170  53E8             @BLOCK4
-00171  53E8                        LDA /4,X
-00172  53E8                        TAY
-00173  53E8                        STA SCREEN_BLOCK4,X
-00174  53E8                        INX
-00175  53E8                        CPX #255
-00176  53E8                        BNE @BLOCK4
-00177  53E8                        LDX #0
-00178  53E8                        RTS
-00179  53E8             ENDM
-00180  53E8             
-00181  53E8             DEFM       PRINTCHAR
-00182  53E8                        LDA /1
-00183  53E8                        JSR CHAROUT
-00184  53E8                        RTS
-00185  53E8             ENDM
-00186  53E8             
-00187  53E8             DEFM       PRINTSTR
-00188  53E8                        LDX #0
-00189  53E8                        LDY #0
-00190  53E8             @LOOP
-00191  53E8                        LDA #255
-00192  53E8                        CMP RASTER_LINE
-00193  53E8                        BNE @LOOP
-00194  53E8                        LDA /1,X
-00195  53E8                        STA $0400,X
-00196  53E8                        INX
-00197  53E8                        CPX /2
-00198  53E8                        BNE @LOOP
-00199  53E8             ENDM
-00200  53E8             
-00201  53E8             DEFM       PLAYSOUND
-00202  53E8                        LDA /1
-00203  53E8                        STA SID_VOLUME
-00204  53E8                        LDA /2
-00205  53E8                        STA SID_VOICE1_LO_FREQ
-00206  53E8                        LDA /3
-00207  53E8                        STA SID_VOICE1_HI_FREQ
-00208  53E8                        LDA /4
-00209  53E8                        STA SID_ATTACK_DECAY
-00210  53E8                        LDA /5
-00211  53E8                        STA SID_SUSTAIN
-00212  53E8                        LDA #0
-00213  53E8                        STA SID_VOICE1_CONTROL
-00214  53E8                        LDA /6
-00215  53E8                        STA SID_VOICE1_CONTROL
-00216  53E8             ENDM
-00217  53E8             ; JOYSTICK
-00218  53E8             JOYSTICK_INPUT = $02
-00219  53E8             JOYSTICK_INPUT1 = $02
-00220  53E8             JOYSTICK_MASK_RIGHT = %00001000
-00221  53E8             JOYSTICK_MASK_LEFT = %00000100
-00222  53E8             JOYSTICK_MASK_UP = %00000001
-00223  53E8             JOYSTICK_MASK_DOWN = %00000010
-00224  53E8             JOYSTICK_MASK_BTN = %00010000
-00225  53E8             
-00226  53E8             ; UI
-00227  53E8  70         BOX_SELECTOR_TL BYTE $70
-00228  53E9  6E         BOX_SELECTOR_TR BYTE $6E
-00229  53EA  6D         BOX_SELECTOR_BL BYTE $6D
-00230  53EB  7D         BOX_SELECTOR_BR BYTE $7D
-00231  53EC             
-00232  53EC             ; PLAYER
-00233  53EC  80         PLAYER_SPRITE_INDEX BYTE $80
-00234  53ED  15         PLAYER_X   BYTE $15
-00235  53EE  32         PLAYER_Y   BYTE $32
-00236  53EF             PLAYER_ACTION = #1
-00237  53EF             PLAYER_MOVED_UP = #2
-00238  53EF             PLAYER_MOVED_RIGHT = #4
-00239  53EF             PLAYER_MOVED_DOWN = #8
-00240  53EF             PLAYER_MOVED_LEFT = #16
-00241  53EF  80         PLAYER_IDLE BYTE $80
-00242  53F0  81         PLAYER_RIGHT BYTE $81
-00243  53F1  83         PLAYER_LEFT BYTE $83
-00244  53F2  85         PLAYER_UP  BYTE $85
-00245  53F3  87         PLAYER_DOWN BYTE $87
-00246  53F4             
-00247  53F4             ; PLAYER ACTIONS
-00248  53F4             PLAYER_ACTION_SHOOT = #%00000001
-00249  53F4             PLAYER_ACTION_TALK = #%00000010
-00250  53F4             PLAYER_ACTION_USE = #%00000100
-00251  53F4             
-00252  53F4             ; PLAYER BULLET
-00253  53F4  93         PLAYER_BULLET_SPRITE_INDEX BYTE $93
-00254  53F5  15         PLAYER_BULLET_X BYTE $15
-00255  53F6  32         PLAYER_BULLET_Y BYTE $32
-00256  53F7  93         PLAYER_BULLET_HORI BYTE $93
-00257  53F8  94         PLAYER_BULLET_VERT BYTE $94
-00258  53F9  95         PLAYER_BULLET_NWSE BYTE $95
-00259  53FA  96         PLAYER_BULLET_SWNE BYTE $96
-00260  53FB  97         PLAYER_BULLET_EXPLOSION1 BYTE $97
-00261  53FC  98         PLAYER_BULLET_EXPLOSION2 BYTE $98
-00262  53FD  99         PLAYER_BULLET_EXPLOSION3 BYTE $99
-00263  53FE  9A         PLAYER_BULLET_EXPLOSION4 BYTE $9A
-00264  53FF  9B         PLAYER_BULLET_EXPLOSION5 BYTE $9B
-00265  5400             
-00266  5400             
-00267  5400             ; ANIMATION
-00268  5400             PLAYER_RIGHT_ANIM1 = #$81
-00269  5400             PLAYER_RIGHT_ANIM2 = #$82
-00270  5400             PLAYER_LEFT_ANIM1 = #$83
-00271  5400             PLAYER_LEFT_ANIM2 = #$84
-00272  5400             PLAYER_UP_ANIM1 = #$85
-00273  5400             PLAYER_UP_ANIM2 = #$86
-00274  5400             PLAYER_DOWN_ANIM1 = #$87
-00275  5400             PLAYER_DOWN_ANIM2 = #$88
-00276  5400             PLAYER_DYING_ANIM1 = #$89
-00277  5400             PLAYER_DYING_ANIM2 = #$8A
-00278  5400             PLAYER_SHOOT_N = #$8B
-00279  5400             PLAYER_SHOOT_NE = #$8C
-00280  5400             PLAYER_SHOOT_E = #$8D
-00281  5400             PLAYER_SHOOT_SE = #$8E
-00282  5400             PLAYER_SHOOT_S = #$8F
-00283  5400             PLAYER_SHOOT_SW = #$90
-00284  5400             PLAYER_SHOOT_W = #$91
-00285  5400             PLAYER_SHOOT_NW = #$92
-00286  5400             
-00287  5400             ; COLOURS
-00288  5400             COLOUR_BLACK = #0
-00289  5400             COLOUR_WHITE = #1
-00290  5400             COLOUR_RED = #2
-00291  5400             COLOUR_CYAN = #3
-00292  5400             COLOUR_LIGHT_BLUE = #14
-00293  5400             
-00294  5400             *=$0820
-00295  0820  A2 00                 LDX #00
-00296  0822  8E 20 D0              STX BORDER_COLOUR
-00297  0825  8E 06 70              STX PLAYER_BULLET_EXPLOSION_COUNTER
-00298  0828  A2 01                 LDX #1
-00299  082A  8E 00 70              STX PLAYER_DYING_COUNTER
-00300  082D  A2 00                 LDX COLOUR_BLACK
-00301  082F  8E 21 D0              STX BG_COLOUR
-00302  0832  20 76 09              JSR CLEARSCREEN
-00303  0835  20 1D 0C              JSR DRAWTITLE
-00304  0838  20 C1 0B              JSR INITCHARACTERSET
-00305  083B  20 89 0C              JSR INITPLAYERSTATE
-00306  083E             TITLELOOP
-00307  083E  20 7C 09              JSR READJOYSTICK
-00308  0841  A5 02                 LDA JOYSTICK_INPUT
-00309  0843  29 01                 AND PLAYER_ACTION
-00310  0845  D0 03                 BNE INITGAME
-00311  0847  4C 3E 08              JMP TITLELOOP
-00312  084A             INITGAME
-00313  084A  A2 00                 LDX COLOUR_BLACK
-00314  084C  8E 21 D0              STX BG_COLOUR
-00315  084F  A2 0E                 LDX COLOUR_LIGHT_BLUE
-00316  0851  8E 86 02              STX TEXT_COLOUR
-00317  0854  20 76 09              JSR CLEARSCREEN
-00318  0857  20 E1 0B              JSR DRAWLEVEL
-00319  085A  20 81 0B              JSR INITSPRITES
-00320  085D             GAMELOOP
-00321  085D             
-00322  085D             
-00323  085D             RASTERLOOP 
-00324  085D  A9 FF                 LDA #255
-00325  085F  CD 12 D0              CMP RASTER_LINE
-00326  0862  D0 F9                 BNE RASTERLOOP
-00327  0864  A2 00                 LDX #0
-00328  0866  8E 02 70              STX PLAYER_MOVED_THIS_FRAME
-00329  0869  AD 00 70              LDA PLAYER_DYING_COUNTER
-00330  086C  C9 00                 CMP #0
-00331  086E  D0 37                 BNE @HANDLEDYING
-00332  0870  20 FC 0A              JSR UPDATEPLAYERANIMATIONFRAME
-00333  0873  20 B3 0B              JSR UPDATEPLAYERSPRITE
-00334  0876  20 3A 0A              JSR MOVEPLAYER
-00335  0879  20 67 0B              JSR UPDATEPLAYERSPRITEPOSITION
-00336  087C  20 59 0C              JSR CHECKFORWALLCOLLISION
-00337  087F  20 74 0B              JSR UPDATEPLAYERBULLETPOSITION
-00338  0882  20 AC 0F              JSR HANDLEBULLETEXPLOSION
-00339  0885  AD 01 70              LDA PLAYER_LIVES
-00340  0888  09 30                 ORA #48
-00341  088A  8D C9 07              STA PLAYER_LIVES_POSITION
-00342  088D  AD 02 70              LDA PLAYER_MOVED_THIS_FRAME
-00343  0890  C9 01                 CMP #$1
-00344  0892  D0 07                 BNE @HANDLEACTION
-00345  0894  20 B9 0E              JSR CHECKFORACTION ; HANDLES MOVING THE BULLET IN CASES WHERE NO ACTION WAS PROCESSES. TODO: RENAME
-00346  0897  4C 5D 08              JMP GAMELOOP
-00347  089A  60                    RTS
-00348  089B             
-00349  089B             @HANDLEACTION 
-00350  089B  20 DB 09              JSR READJOYSTICK1
-00351  089E  20 30 0D              JSR HANDLEACTION
-00352  08A1  20 B3 0B              JSR UPDATEPLAYERSPRITE
-00353  08A4  4C 5D 08              JMP GAMELOOP
-00354  08A7             @HANDLEDYING 
-00355  08A7  20 BD 0C              JSR PLAYZAP
-00356  08AA  20 B3 0B              JSR UPDATEPLAYERSPRITE
-00357  08AD  AE 00 70              LDX PLAYER_DYING_COUNTER
-00358  08B0  E0 40                 CPX #64
-00359  08B2  F0 1C                 BEQ @CHECKLIVES
-00360  08B4  E8                    INX
-00361  08B5  8E 00 70              STX PLAYER_DYING_COUNTER
-00362  08B8  AD EC 53              LDA PLAYER_SPRITE_INDEX
-00363  08BB  C9 8A                 CMP PLAYER_DYING_ANIM2
-00364  08BD  F0 08                 BEQ @DYINGFRAME1
-00365  08BF  A2 8A                 LDX PLAYER_DYING_ANIM2
-00366  08C1  8E EC 53              STX PLAYER_SPRITE_INDEX
-00367  08C4  4C 5D 08              JMP GAMELOOP
-00368  08C7             @DYINGFRAME1 
-00369  08C7  A2 89                 LDX PLAYER_DYING_ANIM1
-00370  08C9  8E EC 53              STX PLAYER_SPRITE_INDEX
-00371  08CC  4C 5D 08              JMP GAMELOOP
-00372  08CF  60                    RTS
-00373  08D0             @CHECKLIVES 
-00374  08D0  AE 01 70              LDX PLAYER_LIVES
-00375  08D3  E0 00                 CPX #0
-00376  08D5  F0 1D                 BEQ @GAMEOVER
-00377  08D7             @RESPAWN
-00378  08D7  A2 00                 LDX #0
-00379  08D9  8E 10 D0              STX SPRITE_OVERFLOW
-00380  08DC  A2 4A                 LDX #$4A
-00381  08DE  8E ED 53              STX PLAYER_X
-00382  08E1  A2 5E                 LDX #$5E
-00383  08E3  8E EE 53              STX PLAYER_Y
-00384  08E6  A2 00                 LDX #0
-00385  08E8  8E 00 70              STX PLAYER_DYING_COUNTER
-00386  08EB  AE EF 53              LDX PLAYER_IDLE
-00387  08EE  8E EC 53              STX PLAYER_SPRITE_INDEX
-00388  08F1  4C 5D 08              JMP GAMELOOP
-00389  08F4             @GAMEOVER
-00390  08F4  20 76 09              JSR CLEARSCREEN
-00391  08F7             
-00392  08F7             
-00393  08F7  A9 00                 LDA #%00000000
-00394  08F9  8D 15 D0              STA SPRITE_ENABLED
-00395  08FC                        
-00396  08FC  A9 00                 LDA COLOUR_BLACK
-00397  08FE  8D 86 02              STA TEXT_COLOUR
-00398  0901  A9 02                 LDA COLOUR_RED
-00399  0903  8D 21 D0              STA BG_COLOUR
-00400  0906             
-00401  0906             
-00402  0906  A2 00                 LDX #0
-00403  0908  A0 00                 LDY #0
-00404  090A             @LOOP
-00405  090A  A9 FF                 LDA #255
-00406  090C  CD 12 D0              CMP RASTER_LINE
-00407  090F  D0 F9                 BNE @LOOP
-00408  0911  BD 2C 18              LDA FT_GAMEOVER,X
-00409  0914  9D 00 04              STA $0400,X
-00410  0917  E8                    INX
-00411  0918  E0 8B                 CPX #$8B
-00412  091A  D0 EE                 BNE @LOOP
-00413  091C             @GAMEOVERLOOP 
-00414  091C  20 7C 09              JSR READJOYSTICK
-00415  091F  A5 02                 LDA JOYSTICK_INPUT
-00416  0921  2D F2 53              AND PLAYER_UP
-00417  0924  D0 04                 BNE @GOTOTITLE
-00418  0926  4C 1C 09              JMP @GAMEOVERLOOP
-00419  0929  60                    RTS
-00420  092A             @GOTOTITLE 
-00421  092A  A2 00                 LDX COLOUR_BLACK
-00422  092C  8E 21 D0              STX BG_COLOUR
-00423  092F  A2 0E                 LDX COLOUR_LIGHT_BLUE
-00424  0931  8E 86 02              STX TEXT_COLOUR
-00425  0934             
-00426  0934             
-00427  0934  A9 00                 LDA #%00000000
-00428  0936  8D 15 D0              STA SPRITE_ENABLED
-00429  0939                        
-00430  0939  20 76 09              JSR CLEARSCREEN
-00431  093C  20 1D 0C              JSR DRAWTITLE
-00432  093F  A2 05                 LDX #5
-00433  0941  8E 01 70              STX PLAYER_LIVES
-00434  0944  A2 00                 LDX #0
-00435  0946  8E 00 70              STX PLAYER_DYING_COUNTER
-00436  0949  4C 3E 08              JMP TITLELOOP
-00437  094C             NEXTLEVEL
-00438  094C  20 76 09              JSR CLEARSCREEN
-00439  094F             
-00440  094F             
-00441  094F  A9 00                 LDA #%00000000
-00442  0951  8D 15 D0              STA SPRITE_ENABLED
-00443  0954                        
-00444  0954  A9 01                 LDA COLOUR_WHITE
-00445  0956  8D 86 02              STA TEXT_COLOUR
-00446  0959             
-00447  0959             
-00448  0959  A2 00                 LDX #0
-00449  095B  A0 00                 LDY #0
-00450  095D             @LOOP
-00451  095D  A9 FF                 LDA #255
-00452  095F  CD 12 D0              CMP RASTER_LINE
-00453  0962  D0 F9                 BNE @LOOP
-00454  0964  BD 19 10              LDA FT_LEVEL1,X
-00455  0967  9D 00 04              STA $0400,X
-00456  096A  E8                    INX
-00457  096B  E0 FA                 CPX #$FA
-00458  096D  D0 EE                 BNE @LOOP
-00459  096F  AE 01 70              LDX PLAYER_LIVES
-00460  0972  4C 3E 08              JMP TITLELOOP
-00461  0975             @EXIT
-00462  0975  60                    RTS
-00463  0976             
-00464  0976             CLEARSCREEN 
-00465  0976  A9 93                 LDA #147
-00466  0978  20 D2 FF              JSR CHAROUT
-00467  097B  60                    RTS
-00468  097C             
-00469  097C             
-00470  097C             READJOYSTICK 
-00471  097C  A0 00                 LDY #0
-00472  097E  84 02                 STY JOYSTICK_INPUT
-00473  0980  20 90 09              JSR @CHECKRIGHT
-00474  0983  20 9F 09              JSR @CHECKLEFT
-00475  0986  20 AE 09              JSR @CHECKUP
-00476  0989  20 BD 09              JSR @CHECKDOWN
-00477  098C  20 C5 09              JSR @CHECKBTN
-00478  098F  60                    RTS
-00479  0990             @CHECKRIGHT 
-00480  0990  AD 00 DC              LDA JOYSTICK_PORT2
-00481  0993  29 08                 AND #JOYSTICK_MASK_RIGHT
-00482  0995  F0 01                 BEQ @INPUTRIGHT
-00483  0997  60                    RTS
-00484  0998             @INPUTRIGHT 
-00485  0998  A5 02                 LDA JOYSTICK_INPUT
-00486  099A  09 04                 ORA #4
-00487  099C  85 02                 STA JOYSTICK_INPUT
-00488  099E  60                    RTS
-00489  099F             @CHECKLEFT 
-00490  099F  AD 00 DC              LDA JOYSTICK_PORT2
-00491  09A2  29 04                 AND #JOYSTICK_MASK_LEFT
-00492  09A4  F0 01                 BEQ @INPUTLEFT
-00493  09A6  60                    RTS
-00494  09A7             @INPUTLEFT 
-00495  09A7  A5 02                 LDA JOYSTICK_INPUT
-00496  09A9  09 10                 ORA #16
-00497  09AB  85 02                 STA JOYSTICK_INPUT
-00498  09AD  60                    RTS
-00499  09AE             @CHECKUP
-00500  09AE  AD 00 DC              LDA JOYSTICK_PORT2
-00501  09B1  29 01                 AND #JOYSTICK_MASK_UP
-00502  09B3  F0 01                 BEQ @INPUTUP
-00503  09B5  60                    RTS
-00504  09B6             @INPUTUP
-00505  09B6  A5 02                 LDA JOYSTICK_INPUT
-00506  09B8  09 02                 ORA #2
-00507  09BA  85 02                 STA JOYSTICK_INPUT
-00508  09BC  60                    RTS
-00509  09BD             @CHECKDOWN 
-00510  09BD  AD 00 DC              LDA JOYSTICK_PORT2
-00511  09C0  29 02                 AND #JOYSTICK_MASK_DOWN
-00512  09C2  F0 09                 BEQ @INPUTDOWN
-00513  09C4  60                    RTS
-00514  09C5             @CHECKBTN
-00515  09C5  AD 00 DC              LDA JOYSTICK_PORT2
-00516  09C8  29 10                 AND #JOYSTICK_MASK_BTN
-00517  09CA  F0 08                 BEQ @INPUTBTN
-00518  09CC  60                    RTS
-00519  09CD             @INPUTDOWN 
-00520  09CD  A5 02                 LDA JOYSTICK_INPUT
-00521  09CF  09 08                 ORA #8
-00522  09D1  85 02                 STA JOYSTICK_INPUT
-00523  09D3  60                    RTS
-00524  09D4             @INPUTBTN
-00525  09D4  A5 02                 LDA JOYSTICK_INPUT
-00526  09D6  09 01                 ORA #1
-00527  09D8  85 02                 STA JOYSTICK_INPUT
-00528  09DA  60                    RTS
-00529  09DB             
-00530  09DB             READJOYSTICK1 
-00531  09DB  A0 00                 LDY #0
-00532  09DD  84 02                 STY JOYSTICK_INPUT1
-00533  09DF  20 EF 09              JSR @CHECKRIGHT
-00534  09E2  20 FE 09              JSR @CHECKLEFT
-00535  09E5  20 0D 0A              JSR @CHECKUP
-00536  09E8  20 1C 0A              JSR @CHECKDOWN
-00537  09EB  20 24 0A              JSR @CHECKBTN
-00538  09EE  60                    RTS
-00539  09EF             @CHECKRIGHT 
-00540  09EF  AD 01 DC              LDA JOYSTICK_PORT1
-00541  09F2  29 08                 AND #JOYSTICK_MASK_RIGHT
-00542  09F4  F0 01                 BEQ @INPUTRIGHT
-00543  09F6  60                    RTS
-00544  09F7             @INPUTRIGHT 
-00545  09F7  A5 02                 LDA JOYSTICK_INPUT1
-00546  09F9  09 04                 ORA #4
-00547  09FB  85 02                 STA JOYSTICK_INPUT1
-00548  09FD  60                    RTS
-00549  09FE             @CHECKLEFT 
-00550  09FE  AD 01 DC              LDA JOYSTICK_PORT1
-00551  0A01  29 04                 AND #JOYSTICK_MASK_LEFT
-00552  0A03  F0 01                 BEQ @INPUTLEFT
-00553  0A05  60                    RTS
-00554  0A06             @INPUTLEFT 
-00555  0A06  A5 02                 LDA JOYSTICK_INPUT1
-00556  0A08  09 10                 ORA #16
-00557  0A0A  85 02                 STA JOYSTICK_INPUT1
-00558  0A0C  60                    RTS
-00559  0A0D             @CHECKUP
-00560  0A0D  AD 01 DC              LDA JOYSTICK_PORT1
-00561  0A10  29 01                 AND #JOYSTICK_MASK_UP
-00562  0A12  F0 01                 BEQ @INPUTUP
-00563  0A14  60                    RTS
-00564  0A15             @INPUTUP
-00565  0A15  A5 02                 LDA JOYSTICK_INPUT1
-00566  0A17  09 02                 ORA #2
-00567  0A19  85 02                 STA JOYSTICK_INPUT1
-00568  0A1B  60                    RTS
-00569  0A1C             @CHECKDOWN 
-00570  0A1C  AD 01 DC              LDA JOYSTICK_PORT1
-00571  0A1F  29 02                 AND #JOYSTICK_MASK_DOWN
-00572  0A21  F0 09                 BEQ @INPUTDOWN
-00573  0A23  60                    RTS
-00574  0A24             @CHECKBTN
-00575  0A24  AD 01 DC              LDA JOYSTICK_PORT1
-00576  0A27  29 10                 AND #JOYSTICK_MASK_BTN
-00577  0A29  F0 08                 BEQ @INPUTBTN
-00578  0A2B  60                    RTS
-00579  0A2C             @INPUTDOWN 
-00580  0A2C  A5 02                 LDA JOYSTICK_INPUT1
-00581  0A2E  09 08                 ORA #8
-00582  0A30  85 02                 STA JOYSTICK_INPUT1
-00583  0A32  60                    RTS
-00584  0A33             @INPUTBTN
-00585  0A33  A5 02                 LDA JOYSTICK_INPUT1
-00586  0A35  09 01                 ORA #1
-00587  0A37  85 02                 STA JOYSTICK_INPUT1
-00588  0A39  60                    RTS
-00589  0A3A             
-00590  0A3A             
-00591  0A3A             
-00592  0A3A             MOVEPLAYER 
-00593  0A3A  20 7C 09              JSR READJOYSTICK
-00594  0A3D  20 4A 0A              JSR @CHECKUP
-00595  0A40  20 A3 0A              JSR @CHECKDOWN
-00596  0A43  20 B9 0A              JSR @CHECKLEFT
-00597  0A46  20 60 0A              JSR @CHECKRIGHT
-00598  0A49  60                    RTS
-00599  0A4A             @CHECKUP
-00600  0A4A  A5 02                 LDA JOYSTICK_INPUT
-00601  0A4C  29 02                 AND PLAYER_MOVED_UP
-00602  0A4E  F0 3F                 BEQ @CONTINUE
-00603  0A50  AC EE 53              LDY PLAYER_Y
-00604  0A53  88                    DEY
-00605  0A54  8C EE 53              STY PLAYER_Y
-00606  0A57  A0 01                 LDY #$1
-00607  0A59  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
-00608  0A5C  20 99 0C              JSR PLAYFOOTSTEP
-00609  0A5F  60                    RTS
-00610  0A60             @CHECKRIGHT 
-00611  0A60  A5 02                 LDA JOYSTICK_INPUT
-00612  0A62  29 04                 AND PLAYER_MOVED_RIGHT
-00613  0A64  F0 29                 BEQ @CONTINUE
-00614  0A66  AE ED 53              LDX PLAYER_X
-00615  0A69  E8                    INX
-00616  0A6A  8E ED 53              STX PLAYER_X
-00617  0A6D  A0 01                 LDY #$1
-00618  0A6F  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
-00619  0A72  20 99 0C              JSR PLAYFOOTSTEP
-00620  0A75                        ;RIGHT SIDE WRAP
-00621  0A75  AD 10 D0              LDA SPRITE_OVERFLOW
-00622  0A78  C9 01                 CMP #%00000001
-00623  0A7A  F0 14                 BEQ @CHECKWRAP
-00624  0A7C  AE ED 53              LDX PLAYER_X
-00625  0A7F  E0 FF                 CPX #255
-00626  0A81  D0 0C                 BNE @CONTINUE
-00627  0A83  AD 10 D0              LDA SPRITE_OVERFLOW
-00628  0A86  09 01                 ORA #%00000001
-00629  0A88  8D 10 D0              STA SPRITE_OVERFLOW
-00630  0A8B  8D ED 53              STA PLAYER_X
-00631  0A8E  60                    RTS
-00632  0A8F             @CONTINUE
-00633  0A8F  60                    RTS
-00634  0A90             @CHECKWRAP 
-00635  0A90  AE ED 53              LDX PLAYER_X
-00636  0A93  E0 30                 CPX #48
-00637  0A95  D0 F8                 BNE @CONTINUE
-00638  0A97  A2 00                 LDX #0
-00639  0A99  8E ED 53              STX PLAYER_X
-00640  0A9C  8E 10 D0              STX SPRITE_OVERFLOW
-00641  0A9F  20 4C 09              JSR NEXTLEVEL
-00642  0AA2  60                    RTS
-00643  0AA3             @CHECKDOWN 
-00644  0AA3  A5 02                 LDA JOYSTICK_INPUT
-00645  0AA5  29 08                 AND PLAYER_MOVED_DOWN
-00646  0AA7  F0 E6                 BEQ @CONTINUE
-00647  0AA9  AC EE 53              LDY PLAYER_Y
-00648  0AAC  C8                    INY
-00649  0AAD  8C EE 53              STY PLAYER_Y
-00650  0AB0  A0 01                 LDY #$1
-00651  0AB2  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
-00652  0AB5  20 99 0C              JSR PLAYFOOTSTEP
-00653  0AB8  60                    RTS
-00654  0AB9             @CHECKLEFT 
-00655  0AB9  A5 02                 LDA JOYSTICK_INPUT
-00656  0ABB  29 10                 AND PLAYER_MOVED_LEFT
-00657  0ABD  F0 D0                 BEQ @CONTINUE
-00658  0ABF  AE ED 53              LDX PLAYER_X
-00659  0AC2  CA                    DEX
-00660  0AC3  8E ED 53              STX PLAYER_X
-00661  0AC6  A0 01                 LDY #$1
-00662  0AC8  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
-00663  0ACB  20 99 0C              JSR PLAYFOOTSTEP
-00664  0ACE                        ; LEFT SIDE WRAP
-00665  0ACE  AD 10 D0              LDA SPRITE_OVERFLOW
-00666  0AD1  C9 01                 CMP #%00000001
-00667  0AD3  F0 15                 BEQ @CHECKLEFTWRAP
-00668  0AD5  AD 10 D0              LDA SPRITE_OVERFLOW
-00669  0AD8  AE ED 53              LDX PLAYER_X
-00670  0ADB  E0 00                 CPX #0
-00671  0ADD  D0 B0                 BNE @CONTINUE
-00672  0ADF  A9 01                 LDA #%00000001
-00673  0AE1  8D 10 D0              STA SPRITE_OVERFLOW
-00674  0AE4  A9 50                 LDA #80
-00675  0AE6  8D ED 53              STA PLAYER_X
-00676  0AE9  60                    RTS
-00677  0AEA             @CHECKLEFTWRAP 
-00678  0AEA  AE ED 53              LDX PLAYER_X
-00679  0AED  E0 00                 CPX #0
-00680  0AEF  D0 9E                 BNE @CONTINUE
-00681  0AF1  A2 00                 LDX #%00000000
-00682  0AF3  8E 10 D0              STX SPRITE_OVERFLOW
-00683  0AF6  A2 FF                 LDX #255
-00684  0AF8  8E ED 53              STX PLAYER_X
-00685  0AFB  60                    RTS
-00686  0AFC             
-00687  0AFC             
-00688  0AFC             
-00689  0AFC             UPDATEPLAYERANIMATIONFRAME 
-00690  0AFC  A5 02                 LDA JOYSTICK_INPUT
-00691  0AFE  29 04                 AND PLAYER_MOVED_RIGHT
-00692  0B00  D0 19                 BNE @SETRIGHT
-00693  0B02  A5 02                 LDA JOYSTICK_INPUT
-00694  0B04  29 10                 AND PLAYER_MOVED_LEFT
-00695  0B06  D0 26                 BNE @SETLEFT
-00696  0B08  A5 02                 LDA JOYSTICK_INPUT
-00697  0B0A  29 02                 AND PLAYER_MOVED_UP
-00698  0B0C  D0 33                 BNE @SETUP
-00699  0B0E  A5 02                 LDA JOYSTICK_INPUT
-00700  0B10  29 08                 AND PLAYER_MOVED_DOWN
-00701  0B12  D0 40                 BNE @SETDOWN
-00702  0B14  AE EF 53              LDX PLAYER_IDLE
-00703  0B17  8E EC 53              STX PLAYER_SPRITE_INDEX
-00704  0B1A  60                    RTS
-00705  0B1B             @SETRIGHT
-00706  0B1B  AE EC 53              LDX PLAYER_SPRITE_INDEX
-00707  0B1E  E0 82                 CPX PLAYER_RIGHT_ANIM2
-00708  0B20  F0 06                 BEQ @RIGHTFRAME1
-00709  0B22  A2 82                 LDX PLAYER_RIGHT_ANIM2
-00710  0B24  8E EC 53              STX PLAYER_SPRITE_INDEX
-00711  0B27  60                    RTS
-00712  0B28             @RIGHTFRAME1 
-00713  0B28  A2 81                 LDX PLAYER_RIGHT_ANIM1
-00714  0B2A  8E EC 53              STX PLAYER_SPRITE_INDEX
-00715  0B2D  60                    RTS
-00716  0B2E             @SETLEFT
-00717  0B2E  AE EC 53              LDX PLAYER_SPRITE_INDEX
-00718  0B31  E0 84                 CPX PLAYER_LEFT_ANIM2
-00719  0B33  F0 06                 BEQ @LEFTFRAME1
-00720  0B35  A2 84                 LDX PLAYER_LEFT_ANIM2
-00721  0B37  8E EC 53              STX PLAYER_SPRITE_INDEX
-00722  0B3A  60                    RTS
-00723  0B3B             @LEFTFRAME1 
-00724  0B3B  A2 83                 LDX PLAYER_LEFT_ANIM1
-00725  0B3D  8E EC 53              STX PLAYER_SPRITE_INDEX
-00726  0B40  60                    RTS
-00727  0B41             @SETUP
-00728  0B41  AE EC 53              LDX PLAYER_SPRITE_INDEX
-00729  0B44  E0 86                 CPX PLAYER_UP_ANIM2
-00730  0B46  F0 06                 BEQ @UPFRAME1
-00731  0B48  A2 86                 LDX PLAYER_UP_ANIM2
-00732  0B4A  8E EC 53              STX PLAYER_SPRITE_INDEX
-00733  0B4D  60                    RTS
-00734  0B4E             @UPFRAME1
-00735  0B4E  A2 85                 LDX PLAYER_UP_ANIM1
-00736  0B50  8E EC 53              STX PLAYER_SPRITE_INDEX
-00737  0B53  60                    RTS
-00738  0B54             @SETDOWN
-00739  0B54  AE EC 53              LDX PLAYER_SPRITE_INDEX
-00740  0B57  E0 88                 CPX PLAYER_DOWN_ANIM2
-00741  0B59  F0 06                 BEQ @DOWNFRAME1
-00742  0B5B  A2 88                 LDX PLAYER_DOWN_ANIM2
-00743  0B5D  8E EC 53              STX PLAYER_SPRITE_INDEX
-00744  0B60  60                    RTS
-00745  0B61             @DOWNFRAME1 
-00746  0B61  A2 87                 LDX PLAYER_DOWN_ANIM1
-00747  0B63  8E EC 53              STX PLAYER_SPRITE_INDEX
-00748  0B66  60                    RTS
-00749  0B67             
-00750  0B67             
-00751  0B67             UPDATEPLAYERSPRITEPOSITION 
-00752  0B67  AD ED 53              LDA PLAYER_X
-00753  0B6A  8D 00 D0              STA SPRITE0_X
-00754  0B6D  AD EE 53              LDA PLAYER_Y
-00755  0B70  8D 01 D0              STA SPRITE0_Y
-00756  0B73  60                    RTS
-00757  0B74             
-00758  0B74             UPDATEPLAYERBULLETPOSITION 
-00759  0B74  AD F5 53              LDA PLAYER_BULLET_X
-00760  0B77  8D 02 D0              STA SPRITE1_X
-00761  0B7A  AD F6 53              LDA PLAYER_BULLET_Y
-00762  0B7D  8D 03 D0              STA SPRITE1_Y
-00763  0B80  60                    RTS
-00764  0B81             
-00765  0B81             INITSPRITES 
-00766  0B81             
-00767  0B81             
-00768  0B81  A9 01                 LDA #%00000001
-00769  0B83  8D 15 D0              STA SPRITE_ENABLED
-00770  0B86                        
-00771  0B86             
-00772  0B86             
-00773  0B86  AD EC 53              LDA PLAYER_SPRITE_INDEX
-00774  0B89  8D F8 07              STA SPRITE0_POINTER
-00775  0B8C             
-00776  0B8C             
-00777  0B8C  AD F4 53              LDA PLAYER_BULLET_SPRITE_INDEX
-00778  0B8F  8D F9 07              STA SPRITE1_POINTER
-00779  0B92  A9 0E                 LDA COLOUR_LIGHT_BLUE
-00780  0B94  8D 27 D0              STA SPRITE0_COLOUR
-00781  0B97  A9 02                 LDA COLOUR_RED
-00782  0B99  8D 28 D0              STA SPRITE1_COLOUR
-00783  0B9C  A2 4A                 LDX #$4A
-00784  0B9E  8E ED 53              STX PLAYER_X
-00785  0BA1  8E F5 53              STX PLAYER_BULLET_X
-00786  0BA4  A0 5E                 LDY #$5E
-00787  0BA6  8C EE 53              STY PLAYER_Y
-00788  0BA9  8E F6 53              STX PLAYER_BULLET_Y
-00789  0BAC  20 67 0B              JSR UPDATEPLAYERSPRITEPOSITION
-00790  0BAF  20 74 0B              JSR UPDATEPLAYERBULLETPOSITION
-00791  0BB2  60                    RTS
-00792  0BB3             
-00793  0BB3             UPDATEPLAYERSPRITE 
-00794  0BB3             
-00795  0BB3             
-00796  0BB3  AD EC 53              LDA PLAYER_SPRITE_INDEX
-00797  0BB6  8D F8 07              STA SPRITE0_POINTER
-00798  0BB9  60                    RTS
-00799  0BBA             
-00800  0BBA             UPDATEPLAYERBULLETSPRITE 
-00801  0BBA             
-00802  0BBA             
-00803  0BBA  AD F4 53              LDA PLAYER_BULLET_SPRITE_INDEX
-00804  0BBD  8D F9 07              STA SPRITE1_POINTER
-00805  0BC0  60                    RTS
-00806  0BC1             
-00807  0BC1             INITCHARACTERSET 
-00808  0BC1  AD 18 D0              LDA CHARSET_LOOKUP
-00809  0BC4  09 0E                 ORA #$0E
-00810  0BC6  8D 18 D0              STA CHARSET_LOOKUP
-00811  0BC9  AD 16 D0              LDA SCREEN_CONTROL
-00812  0BCC  09 10                 ORA #%00010000
-00813  0BCE  8D 16 D0              STA SCREEN_CONTROL
-00814  0BD1  A9 0E                 LDA COLOUR_LIGHT_BLUE
-00815  0BD3  8D 22 D0              STA BG_COLOUR1
-00816  0BD6  A9 01                 LDA COLOUR_WHITE
-00817  0BD8  8D 23 D0              STA BG_COLOUR2
-00818  0BDB  A9 02                 LDA COLOUR_RED
-00819  0BDD  8D 24 D0              STA BG_COLOUR3
-00820  0BE0  60                    RTS
-00821  0BE1             
-00822  0BE1             DRAWLEVEL
-00823  0BE1             
-00824  0BE1             
-00825  0BE1  A2 00                 LDX #0
-00826  0BE3             @BLOCK1
-00827  0BE3  BD 00 50              LDA LEVEL1_BLOCK1,X
-00828  0BE6  A8                    TAY
-00829  0BE7  9D 00 04              STA SCREEN_BLOCK1,X
-00830  0BEA  E8                    INX
-00831  0BEB  E0 FF                 CPX #255
-00832  0BED  D0 F4                 BNE @BLOCK1
-00833  0BEF  A2 00                 LDX #0
-00834  0BF1             @BLOCK2
-00835  0BF1  BD FF 50              LDA LEVEL1_BLOCK2,X
-00836  0BF4  A8                    TAY
-00837  0BF5  9D FF 04              STA SCREEN_BLOCK2,X
-00838  0BF8  E8                    INX
-00839  0BF9  E0 FF                 CPX #255
-00840  0BFB  D0 F4                 BNE @BLOCK2
-00841  0BFD  A2 00                 LDX #0
-00842  0BFF             @BLOCK3
-00843  0BFF  BD FE 51              LDA LEVEL1_BLOCK3,X
-00844  0C02  A8                    TAY
-00845  0C03  9D FE 05              STA SCREEN_BLOCK3,X
-00846  0C06  E8                    INX
-00847  0C07  E0 FF                 CPX #255
-00848  0C09  D0 F4                 BNE @BLOCK3
-00849  0C0B  A2 00                 LDX #0
-00850  0C0D             @BLOCK4
-00851  0C0D  BD FD 52              LDA LEVEL1_BLOCK4,X
-00852  0C10  A8                    TAY
-00853  0C11  9D FD 06              STA SCREEN_BLOCK4,X
-00854  0C14  E8                    INX
-00855  0C15  E0 FF                 CPX #255
-00856  0C17  D0 F4                 BNE @BLOCK4
-00857  0C19  A2 00                 LDX #0
-00858  0C1B  60                    RTS
-00859  0C1C  60                    RTS
-00860  0C1D             
-00861  0C1D             DRAWTITLE
-00862  0C1D             
-00863  0C1D             
-00864  0C1D  A2 00                 LDX #0
-00865  0C1F             @BLOCK1
-00866  0C1F  BD 00 54              LDA TITLE_BLOCK1,X
-00867  0C22  A8                    TAY
-00868  0C23  9D 00 04              STA SCREEN_BLOCK1,X
-00869  0C26  E8                    INX
-00870  0C27  E0 FF                 CPX #255
-00871  0C29  D0 F4                 BNE @BLOCK1
-00872  0C2B  A2 00                 LDX #0
-00873  0C2D             @BLOCK2
-00874  0C2D  BD FF 54              LDA TITLE_BLOCK2,X
-00875  0C30  A8                    TAY
-00876  0C31  9D FF 04              STA SCREEN_BLOCK2,X
-00877  0C34  E8                    INX
-00878  0C35  E0 FF                 CPX #255
-00879  0C37  D0 F4                 BNE @BLOCK2
-00880  0C39  A2 00                 LDX #0
-00881  0C3B             @BLOCK3
-00882  0C3B  BD FE 55              LDA TITLE_BLOCK3,X
-00883  0C3E  A8                    TAY
-00884  0C3F  9D FE 05              STA SCREEN_BLOCK3,X
-00885  0C42  E8                    INX
-00886  0C43  E0 FF                 CPX #255
-00887  0C45  D0 F4                 BNE @BLOCK3
-00888  0C47  A2 00                 LDX #0
-00889  0C49             @BLOCK4
-00890  0C49  BD FD 56              LDA TITLE_BLOCK4,X
-00891  0C4C  A8                    TAY
-00892  0C4D  9D FD 06              STA SCREEN_BLOCK4,X
-00893  0C50  E8                    INX
-00894  0C51  E0 FF                 CPX #255
-00895  0C53  D0 F4                 BNE @BLOCK4
-00896  0C55  A2 00                 LDX #0
-00897  0C57  60                    RTS
-00898  0C58  60                    RTS
-00899  0C59             
-00900  0C59             CHECKFORWALLCOLLISION 
-00901  0C59  AD 1F D0              LDA SPRITE_BG_COLLISION
-00902  0C5C  C9 01                 CMP #%00000001
-00903  0C5E  F0 05                 BEQ KILLPLAYER
-00904  0C60  C9 02                 CMP #%00000010
-00905  0C62  F0 18                 BEQ DESTROYBULLET
-00906  0C64             @CONTINUE
-00907  0C64  60                    RTS
-00908  0C65             
-00909  0C65             KILLPLAYER 
-00910  0C65  AE 00 70              LDX PLAYER_DYING_COUNTER
-00911  0C68  E8                    INX
-00912  0C69  8E 00 70              STX PLAYER_DYING_COUNTER
-00913  0C6C  A9 89                 LDA PLAYER_DYING_ANIM1
-00914  0C6E  8D EC 53              STA PLAYER_SPRITE_INDEX
-00915  0C71  AE 01 70              LDX PLAYER_LIVES
-00916  0C74  CA                    DEX
-00917  0C75  8E 01 70              STX PLAYER_LIVES
-00918  0C78  20 7C 0C              JSR DESTROYBULLET
-00919  0C7B  60                    RTS
-00920  0C7C             
-00921  0C7C             DESTROYBULLET 
-00922  0C7C                        ;DISABLESPRITE #%11111101
-00923  0C7C  AD 06 70              LDA PLAYER_BULLET_EXPLOSION_COUNTER
-00924  0C7F  C9 00                 CMP #0
-00925  0C81  D0 05                 BNE @CONT
-00926  0C83  A9 01                 LDA #1
-00927  0C85  8D 06 70              STA PLAYER_BULLET_EXPLOSION_COUNTER
-00928  0C88             @CONT
-00929  0C88  60                    RTS
-00930  0C89             
-00931  0C89             INITPLAYERSTATE 
-00932  0C89  A2 09                 LDX #9
-00933  0C8B  8E 01 70              STX PLAYER_LIVES
-00934  0C8E  A2 01                 LDX PLAYER_ACTION_SHOOT
-00935  0C90  8E 03 70              STX PLAYER_CURRENT_ACTION
-00936  0C93  A2 00                 LDX #0
-00937  0C95  8E 04 70              STX PLAYER_ACTION_SWITCH_COOLDOWN
-00938  0C98  60                    RTS
-00939  0C99             
-00940  0C99             
-00941  0C99             PLAYFOOTSTEP 
-00942  0C99             
-00943  0C99             
-00944  0C99  A9 04                 LDA #4
-00945  0C9B  8D 18 D4              STA SID_VOLUME
-00946  0C9E  A9 00                 LDA #0
-00947  0CA0  8D 00 D4              STA SID_VOICE1_LO_FREQ
-00948  0CA3  A9 80                 LDA #128
-00949  0CA5  8D 01 D4              STA SID_VOICE1_HI_FREQ
-00950  0CA8  A9 80                 LDA #128
-00951  0CAA  8D 05 D4              STA SID_ATTACK_DECAY
-00952  0CAD  A9 01                 LDA #1
-00953  0CAF  8D 06 D4              STA SID_SUSTAIN
-00954  0CB2  A9 00                 LDA #0
-00955  0CB4  8D 04 D4              STA SID_VOICE1_CONTROL
-00956  0CB7  A9 41                 LDA #65
-00957  0CB9  8D 04 D4              STA SID_VOICE1_CONTROL
-00958  0CBC  60                    RTS
-00959  0CBD             
-00960  0CBD             PLAYZAP
-00961  0CBD             
-00962  0CBD             
-00963  0CBD  A9 19                 LDA #25
-00964  0CBF  8D 18 D4              STA SID_VOLUME
-00965  0CC2  A9 00                 LDA #0
-00966  0CC4  8D 00 D4              STA SID_VOICE1_LO_FREQ
-00967  0CC7  A9 28                 LDA #40
-00968  0CC9  8D 01 D4              STA SID_VOICE1_HI_FREQ
-00969  0CCC  A9 16                 LDA #22
-00970  0CCE  8D 05 D4              STA SID_ATTACK_DECAY
-00971  0CD1  A9 07                 LDA #7
-00972  0CD3  8D 06 D4              STA SID_SUSTAIN
-00973  0CD6  A9 00                 LDA #0
-00974  0CD8  8D 04 D4              STA SID_VOICE1_CONTROL
-00975  0CDB  A9 81                 LDA #129
-00976  0CDD  8D 04 D4              STA SID_VOICE1_CONTROL
-00977  0CE0  60                    RTS
-00978  0CE1             
-00979  0CE1             PLAYLASER
-00980  0CE1             
-00981  0CE1             
-00982  0CE1  A9 19                 LDA #25
-00983  0CE3  8D 18 D4              STA SID_VOLUME
-00984  0CE6  A9 14                 LDA #20
-00985  0CE8  8D 00 D4              STA SID_VOICE1_LO_FREQ
-00986  0CEB  A9 2C                 LDA #44
-00987  0CED  8D 01 D4              STA SID_VOICE1_HI_FREQ
-00988  0CF0  A9 58                 LDA #88
-00989  0CF2  8D 05 D4              STA SID_ATTACK_DECAY
-00990  0CF5  A9 03                 LDA #3
-00991  0CF7  8D 06 D4              STA SID_SUSTAIN
-00992  0CFA  A9 00                 LDA #0
-00993  0CFC  8D 04 D4              STA SID_VOICE1_CONTROL
-00994  0CFF  A9 21                 LDA #33
-00995  0D01  8D 04 D4              STA SID_VOICE1_CONTROL
-00996  0D04  60                    RTS
-00997  0D05             
-00998  0D05             
-00999  0D05             UPDATELASTAIMDIR 
-01000  0D05  AD EC 53              LDA PLAYER_SPRITE_INDEX
-01001  0D08  C9 8B                 CMP PLAYER_SHOOT_N
-01002  0D0A  F0 1D                 BEQ @SETAIMDIR
-01003  0D0C  C9 8D                 CMP PLAYER_SHOOT_E
-01004  0D0E  F0 19                 BEQ @SETAIMDIR
-01005  0D10  C9 8F                 CMP PLAYER_SHOOT_S
-01006  0D12  F0 15                 BEQ @SETAIMDIR
-01007  0D14  C9 91                 CMP PLAYER_SHOOT_W
-01008  0D16  F0 11                 BEQ @SETAIMDIR
-01009  0D18  C9 8C                 CMP PLAYER_SHOOT_NE
-01010  0D1A  F0 0D                 BEQ @SETAIMDIR
-01011  0D1C  C9 92                 CMP PLAYER_SHOOT_NW
-01012  0D1E  F0 09                 BEQ @SETAIMDIR
-01013  0D20  C9 8E                 CMP PLAYER_SHOOT_SE
-01014  0D22  F0 05                 BEQ @SETAIMDIR
-01015  0D24  C9 90                 CMP PLAYER_SHOOT_SW
-01016  0D26  F0 01                 BEQ @SETAIMDIR
-01017  0D28  60                    RTS
-01018  0D29             @SETAIMDIR 
-01019  0D29  AD EC 53              LDA PLAYER_SPRITE_INDEX
-01020  0D2C  8D 05 70              STA PLAYER_BULLET_DIRECTION
-01021  0D2F  60                    RTS
-01022  0D30             
-01023  0D30             HANDLEACTION 
-01024  0D30  20 37 0D              JSR @PROCESS
-01025  0D33  20 05 0D              JSR UPDATELASTAIMDIR
-01026  0D36  60                    RTS
-01027  0D37             @PROCESS
-01028  0D37  20 D1 0D              JSR CHECKFORSELECTEDACTIONCHANGE
-01029  0D3A  20 B9 0E              JSR CHECKFORACTION
-01030  0D3D  20 DB 09              JSR READJOYSTICK1
-01031  0D40  A5 02                 LDA JOYSTICK_INPUT1
-01032  0D42  29 02                 AND PLAYER_MOVED_UP
-01033  0D44  D0 13                 BNE @SHOOTUP
-01034  0D46  A5 02                 LDA JOYSTICK_INPUT1
-01035  0D48  29 08                 AND PLAYER_MOVED_DOWN
-01036  0D4A  D0 3D                 BNE @SHOOTDOWN
-01037  0D4C  A5 02                 LDA JOYSTICK_INPUT1
-01038  0D4E  29 10                 AND PLAYER_MOVED_LEFT
-01039  0D50  D0 67                 BNE @SHOOTLEFT
-01040  0D52  A5 02                 LDA JOYSTICK_INPUT1
-01041  0D54  29 04                 AND PLAYER_MOVED_RIGHT
-01042  0D56  D0 6D                 BNE @SHOOTRIGHT
-01043  0D58  60                    RTS
-01044  0D59             @SHOOTUP
-01045  0D59  A5 02                 LDA JOYSTICK_INPUT1
-01046  0D5B  29 04                 AND PLAYER_MOVED_RIGHT
-01047  0D5D  D0 12                 BNE @SHOOTUPRIGHT
-01048  0D5F  A5 02                 LDA JOYSTICK_INPUT1
-01049  0D61  29 10                 AND PLAYER_MOVED_LEFT
-01050  0D63  D0 18                 BNE @SHOOTUPLEFT
-01051  0D65  A9 8B                 LDA PLAYER_SHOOT_N
-01052  0D67  8D EC 53              STA PLAYER_SPRITE_INDEX
-01053  0D6A  AD F8 53              LDA PLAYER_BULLET_VERT
-01054  0D6D  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01055  0D70  60                    RTS
-01056  0D71             @SHOOTUPRIGHT 
-01057  0D71  A9 8C                 LDA PLAYER_SHOOT_NE
-01058  0D73  8D EC 53              STA PLAYER_SPRITE_INDEX
-01059  0D76  AD FA 53              LDA PLAYER_BULLET_SWNE
-01060  0D79  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01061  0D7C  60                    RTS
-01062  0D7D             @SHOOTUPLEFT 
-01063  0D7D  A9 92                 LDA PLAYER_SHOOT_NW
-01064  0D7F  8D EC 53              STA PLAYER_SPRITE_INDEX
-01065  0D82  AD F9 53              LDA PLAYER_BULLET_NWSE
-01066  0D85  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01067  0D88  60                    RTS
-01068  0D89             @SHOOTDOWN 
-01069  0D89  A5 02                 LDA JOYSTICK_INPUT1
-01070  0D8B  29 04                 AND PLAYER_MOVED_RIGHT
-01071  0D8D  D0 12                 BNE @SHOOTDOWNRIGHT
-01072  0D8F  A5 02                 LDA JOYSTICK_INPUT1
-01073  0D91  29 10                 AND PLAYER_MOVED_LEFT
-01074  0D93  D0 18                 BNE @SHOOTDOWNLEFT
-01075  0D95  A9 8F                 LDA PLAYER_SHOOT_S
-01076  0D97  8D EC 53              STA PLAYER_SPRITE_INDEX
-01077  0D9A  AD F8 53              LDA PLAYER_BULLET_VERT
-01078  0D9D  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01079  0DA0  60                    RTS
-01080  0DA1             @SHOOTDOWNRIGHT 
-01081  0DA1  A9 8E                 LDA PLAYER_SHOOT_SE
-01082  0DA3  8D EC 53              STA PLAYER_SPRITE_INDEX
-01083  0DA6  AD F9 53              LDA PLAYER_BULLET_NWSE
-01084  0DA9  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01085  0DAC  60                    RTS
-01086  0DAD             @SHOOTDOWNLEFT 
-01087  0DAD  A9 90                 LDA PLAYER_SHOOT_SW
-01088  0DAF  8D EC 53              STA PLAYER_SPRITE_INDEX
-01089  0DB2  AD FA 53              LDA PLAYER_BULLET_SWNE
-01090  0DB5  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01091  0DB8  60                    RTS
-01092  0DB9             @SHOOTLEFT 
-01093  0DB9  A9 91                 LDA PLAYER_SHOOT_W
-01094  0DBB  8D EC 53              STA PLAYER_SPRITE_INDEX
-01095  0DBE  AD F7 53              LDA PLAYER_BULLET_HORI
-01096  0DC1  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01097  0DC4  60                    RTS
-01098  0DC5             @SHOOTRIGHT 
-01099  0DC5  A9 8D                 LDA PLAYER_SHOOT_E
-01100  0DC7  8D EC 53              STA PLAYER_SPRITE_INDEX
-01101  0DCA  AD F7 53              LDA PLAYER_BULLET_HORI
-01102  0DCD  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01103  0DD0  60                    RTS
-01104  0DD1             CHECKFORSELECTEDACTIONCHANGE 
-01105  0DD1  A5 02                 LDA JOYSTICK_INPUT
-01106  0DD3  29 01                 AND PLAYER_ACTION
-01107  0DD5  D0 01                 BNE @UPDATEACTION
-01108  0DD7  60                    RTS
-01109  0DD8             @UPDATEACTION 
-01110  0DD8  AE 04 70              LDX PLAYER_ACTION_SWITCH_COOLDOWN
-01111  0DDB  E8                    INX
-01112  0DDC  8E 04 70              STX PLAYER_ACTION_SWITCH_COOLDOWN
-01113  0DDF  E0 01                 CPX #1
-01114  0DE1  F0 39                 BEQ @PROCESSACTIONUPDATE
-01115  0DE3  E0 10                 CPX #16
-01116  0DE5  F0 35                 BEQ @PROCESSACTIONUPDATE
-01117  0DE7  E0 20                 CPX #32
-01118  0DE9  F0 31                 BEQ @PROCESSACTIONUPDATE
-01119  0DEB  E0 30                 CPX #48
-01120  0DED  F0 2D                 BEQ @PROCESSACTIONUPDATE
-01121  0DEF  E0 40                 CPX #64
-01122  0DF1  F0 29                 BEQ @PROCESSACTIONUPDATE
-01123  0DF3  E0 50                 CPX #80
-01124  0DF5  F0 25                 BEQ @PROCESSACTIONUPDATE
-01125  0DF7  E0 60                 CPX #96
-01126  0DF9  F0 21                 BEQ @PROCESSACTIONUPDATE
-01127  0DFB  E0 6E                 CPX #110
-01128  0DFD  F0 1D                 BEQ @PROCESSACTIONUPDATE
-01129  0DFF  E0 80                 CPX #128
-01130  0E01  F0 19                 BEQ @PROCESSACTIONUPDATE
-01131  0E03  E0 8E                 CPX #142
-01132  0E05  F0 15                 BEQ @PROCESSACTIONUPDATE
-01133  0E07  E0 A0                 CPX #160
-01134  0E09  F0 11                 BEQ @PROCESSACTIONUPDATE
-01135  0E0B  E0 B0                 CPX #176
-01136  0E0D  F0 0D                 BEQ @PROCESSACTIONUPDATE
-01137  0E0F  E0 C6                 CPX #198
-01138  0E11  F0 09                 BEQ @PROCESSACTIONUPDATE
-01139  0E13  E0 D6                 CPX #214
-01140  0E15  F0 05                 BEQ @PROCESSACTIONUPDATE
-01141  0E17  E0 E6                 CPX #230
-01142  0E19  F0 01                 BEQ @PROCESSACTIONUPDATE
-01143  0E1B  60                    RTS
-01144  0E1C             @PROCESSACTIONUPDATE 
-01145  0E1C  20 92 0E              JSR RESETACTIONSELECTOR
-01146  0E1F  AD 03 70              LDA PLAYER_CURRENT_ACTION
-01147  0E22  C9 01                 CMP PLAYER_ACTION_SHOOT
-01148  0E24  F0 2A                 BEQ SETACTIONTALK
-01149  0E26  C9 02                 CMP PLAYER_ACTION_TALK
-01150  0E28  F0 47                 BEQ SETACTIONUSE
-01151  0E2A  C9 04                 CMP PLAYER_ACTION_USE
-01152  0E2C  F0 01                 BEQ SETACTIONSHOOT
-01153  0E2E  60                    RTS
-01154  0E2F             SETACTIONSHOOT 
-01155  0E2F  A2 01                 LDX PLAYER_ACTION_SHOOT
-01156  0E31  8E 03 70              STX PLAYER_CURRENT_ACTION
-01157  0E34  20 92 0E              JSR RESETACTIONSELECTOR
-01158  0E37  AE E8 53              LDX BOX_SELECTOR_TL
-01159  0E3A  8E 95 07              STX ACTION_SELECTOR_POS1
-01160  0E3D  AE E9 53              LDX BOX_SELECTOR_TR
-01161  0E40  8E 97 07              STX ACTION_SELECTOR_POS2
-01162  0E43  AE EA 53              LDX BOX_SELECTOR_BL
-01163  0E46  8E E5 07              STX ACTION_SELECTOR_POS3
-01164  0E49  AE EB 53              LDX BOX_SELECTOR_BR
-01165  0E4C  8E E7 07              STX ACTION_SELECTOR_POS4
-01166  0E4F  60                    RTS
-01167  0E50             SETACTIONTALK 
-01168  0E50  A2 02                 LDX PLAYER_ACTION_TALK
-01169  0E52  8E 03 70              STX PLAYER_CURRENT_ACTION
-01170  0E55  20 92 0E              JSR RESETACTIONSELECTOR
-01171  0E58  AE E8 53              LDX BOX_SELECTOR_TL
-01172  0E5B  8E 45 07              STX ACTION_SELECTOR_POS5
-01173  0E5E  AE E9 53              LDX BOX_SELECTOR_TR
-01174  0E61  8E 47 07              STX ACTION_SELECTOR_POS6
-01175  0E64  AE EA 53              LDX BOX_SELECTOR_BL
-01176  0E67  8E 95 07              STX ACTION_SELECTOR_POS7
-01177  0E6A  AE EB 53              LDX BOX_SELECTOR_BR
-01178  0E6D  8E 97 07              STX ACTION_SELECTOR_POS8
-01179  0E70  60                    RTS
-01180  0E71             SETACTIONUSE 
-01181  0E71  A2 04                 LDX PLAYER_ACTION_USE
-01182  0E73  8E 03 70              STX PLAYER_CURRENT_ACTION
-01183  0E76  20 92 0E              JSR RESETACTIONSELECTOR
-01184  0E79  AE E8 53              LDX BOX_SELECTOR_TL
-01185  0E7C  8E F5 06              STX ACTION_SELECTOR_POS9
-01186  0E7F  AE E9 53              LDX BOX_SELECTOR_TR
-01187  0E82  8E F7 06              STX ACTION_SELECTOR_POS10
-01188  0E85  AE EA 53              LDX BOX_SELECTOR_BL
-01189  0E88  8E 45 07              STX ACTION_SELECTOR_POS11
-01190  0E8B  AE EB 53              LDX BOX_SELECTOR_BR
-01191  0E8E  8E 47 07              STX ACTION_SELECTOR_POS12
-01192  0E91  60                    RTS
-01193  0E92             RESETACTIONSELECTOR 
-01194  0E92  A2 20                 LDX #32
-01195  0E94  8E 95 07              STX ACTION_SELECTOR_POS1
-01196  0E97  8E 97 07              STX ACTION_SELECTOR_POS2
-01197  0E9A  8E E5 07              STX ACTION_SELECTOR_POS3
-01198  0E9D  8E E7 07              STX ACTION_SELECTOR_POS4
-01199  0EA0  8E 45 07              STX ACTION_SELECTOR_POS5
-01200  0EA3  8E 47 07              STX ACTION_SELECTOR_POS6
-01201  0EA6  8E 95 07              STX ACTION_SELECTOR_POS7
-01202  0EA9  8E 97 07              STX ACTION_SELECTOR_POS8
-01203  0EAC  8E F5 06              STX ACTION_SELECTOR_POS9
-01204  0EAF  8E F7 06              STX ACTION_SELECTOR_POS10
-01205  0EB2  8E 45 07              STX ACTION_SELECTOR_POS11
-01206  0EB5  8E 47 07              STX ACTION_SELECTOR_POS12
-01207  0EB8  60                    RTS
-01208  0EB9             CHECKFORACTION 
-01209  0EB9  AD 15 D0              LDA SPRITE_ENABLED
-01210  0EBC  29 02                 AND #%00000010
-01211  0EBE  F0 04                 BEQ @ACTIONCANPROCEED
-01212  0EC0  20 ED 0E              JSR @MOVEBULLET
-01213  0EC3  60                    RTS
-01214  0EC4             @ACTIONCANPROCEED 
-01215  0EC4  20 7C 09              JSR READJOYSTICK
-01216  0EC7  A5 02                 LDA JOYSTICK_INPUT
-01217  0EC9  29 01                 AND PLAYER_ACTION
-01218  0ECB  F0 04                 BEQ @ACTCONT
-01219  0ECD  20 D2 0E              JSR @SHOOT
-01220  0ED0  60                    RTS
-01221  0ED1             @ACTCONT
-01222  0ED1  60                    RTS
-01223  0ED2             @SHOOT
-01224  0ED2  20 E1 0C              JSR PLAYLASER
-01225  0ED5  AE ED 53              LDX PLAYER_X
-01226  0ED8  8E F5 53              STX PLAYER_BULLET_X
-01227  0EDB  AC EE 53              LDY PLAYER_Y
-01228  0EDE  8C F6 53              STY PLAYER_BULLET_Y
-01229  0EE1             
-01230  0EE1             
-01231  0EE1  AD 15 D0              LDA SPRITE_ENABLED
-01232  0EE4  09 02                 ORA #%00000010
-01233  0EE6  8D 15 D0              STA SPRITE_ENABLED
-01234  0EE9  20 74 0B              JSR UPDATEPLAYERBULLETPOSITION
-01235  0EEC                        ;JSR UPDATEPLAYERBULLETSPRITE
-01236  0EEC  60                    RTS
-01237  0EED             @MOVEBULLET 
-01238  0EED  20 F4 0E              JSR @PROCESS
-01239  0EF0  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01240  0EF3  60                    RTS
-01241  0EF4             @PROCESS
-01242  0EF4  AD 06 70              LDA PLAYER_BULLET_EXPLOSION_COUNTER
-01243  0EF7  C9 00                 CMP #0
-01244  0EF9  F0 01                 BEQ @CONTINUEPROCESSING
-01245  0EFB  60                    RTS
-01246  0EFC             @CONTINUEPROCESSING 
-01247  0EFC  AD 05 70              LDA PLAYER_BULLET_DIRECTION
-01248  0EFF  C9 8B                 CMP PLAYER_SHOOT_N
-01249  0F01  F0 1D                 BEQ @MOVEBULLETN
-01250  0F03  C9 8D                 CMP PLAYER_SHOOT_E
-01251  0F05  F0 27                 BEQ @MOVEBULLETE
-01252  0F07  C9 8F                 CMP PLAYER_SHOOT_S
-01253  0F09  F0 3F                 BEQ @MOVEBULLETS
-01254  0F0B  C9 91                 CMP PLAYER_SHOOT_W
-01255  0F0D  F0 2D                 BEQ @MOVEBULLETW
-01256  0F0F  C9 8C                 CMP PLAYER_SHOOT_NE
-01257  0F11  F0 5A                 BEQ @MOVEBULLETNE
-01258  0F13  C9 92                 CMP PLAYER_SHOOT_NW
-01259  0F15  F0 41                 BEQ @MOVEBULLETNW
-01260  0F17  C9 8E                 CMP PLAYER_SHOOT_SE
-01261  0F19  F0 7C                 BEQ @MOVEBULLETSE
-01262  0F1B  C9 90                 CMP PLAYER_SHOOT_SW
-01263  0F1D  F0 63                 BEQ @MOVEBULLETSW
-01264  0F1F  60                    RTS
-01265  0F20             @MOVEBULLETN 
-01266  0F20  AC F6 53              LDY PLAYER_BULLET_Y
-01267  0F23  88                    DEY
-01268  0F24  8C F6 53              STY PLAYER_BULLET_Y
-01269  0F27  AD F8 53              LDA PLAYER_BULLET_VERT
-01270  0F2A  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01271  0F2D  60                    RTS
-01272  0F2E             @MOVEBULLETE 
-01273  0F2E  AC F5 53              LDY PLAYER_BULLET_X
-01274  0F31  C8                    INY
-01275  0F32  8C F5 53              STY PLAYER_BULLET_X
-01276  0F35  AD F7 53              LDA PLAYER_BULLET_HORI
-01277  0F38  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01278  0F3B  60                    RTS
-01279  0F3C             @MOVEBULLETW 
-01280  0F3C  AC F5 53              LDY PLAYER_BULLET_X
-01281  0F3F  88                    DEY
-01282  0F40  8C F5 53              STY PLAYER_BULLET_X
-01283  0F43  AD F7 53              LDA PLAYER_BULLET_HORI
-01284  0F46  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01285  0F49  60                    RTS
-01286  0F4A             @MOVEBULLETS 
-01287  0F4A  AC F6 53              LDY PLAYER_BULLET_Y
-01288  0F4D  C8                    INY
-01289  0F4E  8C F6 53              STY PLAYER_BULLET_Y
-01290  0F51  AD F8 53              LDA PLAYER_BULLET_VERT
-01291  0F54  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01292  0F57  60                    RTS
-01293  0F58             @MOVEBULLETNW 
-01294  0F58  AE F5 53              LDX PLAYER_BULLET_X
-01295  0F5B  AC F6 53              LDY PLAYER_BULLET_Y
-01296  0F5E  CA                    DEX
-01297  0F5F  88                    DEY
-01298  0F60  8E F5 53              STX PLAYER_BULLET_X
-01299  0F63  8C F6 53              STY PLAYER_BULLET_Y
-01300  0F66  AD F9 53              LDA PLAYER_BULLET_NWSE
-01301  0F69  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01302  0F6C  60                    RTS
-01303  0F6D             @MOVEBULLETNE 
-01304  0F6D  AE F5 53              LDX PLAYER_BULLET_X
-01305  0F70  AC F6 53              LDY PLAYER_BULLET_Y
-01306  0F73  E8                    INX
-01307  0F74  88                    DEY
-01308  0F75  8E F5 53              STX PLAYER_BULLET_X
-01309  0F78  8C F6 53              STY PLAYER_BULLET_Y
-01310  0F7B  AD FA 53              LDA PLAYER_BULLET_SWNE
-01311  0F7E  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01312  0F81  60                    RTS
-01313  0F82             @MOVEBULLETSW 
-01314  0F82  AE F5 53              LDX PLAYER_BULLET_X
-01315  0F85  AC F6 53              LDY PLAYER_BULLET_Y
-01316  0F88  CA                    DEX
-01317  0F89  C8                    INY
-01318  0F8A  8E F5 53              STX PLAYER_BULLET_X
-01319  0F8D  8C F6 53              STY PLAYER_BULLET_Y
-01320  0F90  AD FA 53              LDA PLAYER_BULLET_SWNE
-01321  0F93  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01322  0F96  60                    RTS
-01323  0F97             @MOVEBULLETSE 
-01324  0F97  AE F5 53              LDX PLAYER_BULLET_X
-01325  0F9A  AC F6 53              LDY PLAYER_BULLET_Y
-01326  0F9D  E8                    INX
-01327  0F9E  C8                    INY
-01328  0F9F  8E F5 53              STX PLAYER_BULLET_X
-01329  0FA2  8C F6 53              STY PLAYER_BULLET_Y
-01330  0FA5  AD F9 53              LDA PLAYER_BULLET_NWSE
-01331  0FA8  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01332  0FAB  60                    RTS
-01333  0FAC             
-01334  0FAC             HANDLEBULLETEXPLOSION 
-01335  0FAC  AE 06 70              LDX PLAYER_BULLET_EXPLOSION_COUNTER
-01336  0FAF  E0 00                 CPX #0
-01337  0FB1  F0 65                 BEQ @CONT
-01338  0FB3  20 BD 0C              JSR PLAYZAP
-01339  0FB6  E8                    INX
-01340  0FB7  8E 06 70              STX PLAYER_BULLET_EXPLOSION_COUNTER
-01341  0FBA  E0 02                 CPX #2
-01342  0FBC  F0 15                 BEQ @FRAME1
-01343  0FBE  E0 06                 CPX #6
-01344  0FC0  F0 1B                 BEQ @FRAME2
-01345  0FC2  E0 0C                 CPX #12
-01346  0FC4  F0 21                 BEQ @FRAME3
-01347  0FC6  E0 12                 CPX #18
-01348  0FC8  F0 27                 BEQ @FRAME4
-01349  0FCA  E0 18                 CPX #24
-01350  0FCC  F0 2D                 BEQ @FRAME5
-01351  0FCE  E0 20                 CPX #32
-01352  0FD0  F0 33                 BEQ @DESTROY
-01353  0FD2  60                    RTS
-01354  0FD3             @FRAME1
-01355  0FD3  AD FB 53              LDA PLAYER_BULLET_EXPLOSION1
-01356  0FD6  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01357  0FD9  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01358  0FDC  60                    RTS
-01359  0FDD             @FRAME2
-01360  0FDD  AD FC 53              LDA PLAYER_BULLET_EXPLOSION2
-01361  0FE0  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01362  0FE3  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01363  0FE6  60                    RTS
-01364  0FE7             @FRAME3
-01365  0FE7  AD FD 53              LDA PLAYER_BULLET_EXPLOSION3
-01366  0FEA  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01367  0FED  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01368  0FF0  60                    RTS
-01369  0FF1             @FRAME4
-01370  0FF1  AD FE 53              LDA PLAYER_BULLET_EXPLOSION4
-01371  0FF4  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01372  0FF7  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01373  0FFA  60                    RTS
-01374  0FFB             @FRAME5
-01375  0FFB  AD FF 53              LDA PLAYER_BULLET_EXPLOSION5
-01376  0FFE  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01377  1001  20 BA 0B              JSR UPDATEPLAYERBULLETSPRITE
-01378  1004  60                    RTS
-01379  1005             @DESTROY
-01380  1005  A9 00                 LDA #0
-01381  1007  8D 06 70              STA PLAYER_BULLET_EXPLOSION_COUNTER
-01382  100A             
-01383  100A             
-01384  100A  AD 15 D0              LDA SPRITE_ENABLED
-01385  100D  29 FD                 AND #%11111101
-01386  100F  8D 15 D0              STA SPRITE_ENABLED
-01387  1012  AD F7 53              LDA PLAYER_BULLET_HORI
-01388  1015  8D F4 53              STA PLAYER_BULLET_SPRITE_INDEX
-01389  1018             @CONT
-01390  1018  60                    RTS
-01391  1019             
-01392  1019             ; FLAVOUR TEXT
-01393  1019  08 0F 17   FT_LEVEL1  TEXT 'HOW INSIGNIFICANT THE MERE MORTAL WHO IS DWARFED BY THE MAJESTY OF THIS ELECTRIC EDIFICE. AS YOU ARE NOW YOU MAY MEANDER HERE FOREVER. FREE YOUR MIND FROM ANGER AND AGGRESSION. RESIST ITS TREACHEROUS ALLURE AS YOU SUCCUMB TO ITS ANTAGONISTIC NOTIONS.'
-01394  1113  00                    BYTE 00
-01395  1114  14 08 05   FT_LEVEL2  TEXT 'THERE IS DANGER AHEAD, BUT DO NOT BE AFRAID. FOR I AM WITH YOU, AS WATER, AS AIR, AS BREATH ITSELF IN THIS PLACE OF NO TIME AND NO SPACE. BE RESOLUTE. THERE ARE TRIALS AHEAD... AND REWARDS FOR THOSE WHO STRIVE! THE SURREAL SEARCH ENDURES...'
-01396  1204  00                    BYTE 00
-01397  1205  19 0F 15   FT_LEVEL2P2 TEXT 'YOU HAVE A TASK! IN ORDER TO RELEASE YOURSELF FROM THIS WEB OF WISDOM, THIS KNOTTED MAZE OF DELERIUM YOU MUST ENTER THE NUCLEAR PORTALS OF THE ELECTRIC CASTLE!'
-01398  12A4  00                    BYTE 00
-01399  12A5  0C 0F 0F   FT_LEVEL2P3 TEXT 'LOOK AROUND, BUT LINGER NOT. WHERE I LEAD YOU WILL FOLLOW. IGNITE MY ANGER WITH YOUR DELAY AND PUNISHMENT WILL COME YOUR WAY.'
-01400  1322  00                    BYTE 00
-01401  1323  09 14 20   FT_LEVEL3  TEXT 'IT IS TIME TO REFLECT UPON YOUR EGO SELF. NOWHERE TO HIDE WHEN THE WALLS ECHO THE YOU THAT WE ALL SEE. IT IS FROM THESE WIND TORN RAMPARTS THAT WE SURVEY A THOUSAND FUTURES. BREATH DEEP THIS INTOXICATING AROMA OF ENDLESS ENTWINED EMOTIONS.'
-01402  1412  00                    BYTE 00
-01403  1413  01 14 20   FT_LEVEL4  TEXT 'AT LAST YOU ENTER THE NUCLEAR PORTALS OF PSYCHOGENESIS. HERE IN THIS VAST HALL WHERE EVEN SHADOWS FEAR THE LIGHT YOU MUST CONFRONT YOUR PAST. IF YOU HAVE KILLED BEWARE THE GATHERING OF SPIRITS FOR HERE THE DISEMBODIED ASTRAL WORLD BECOMES FLESH ONCE MORE.'
-01404  1512  00                    BYTE 00
-01405  1513  19 0F 15   FT_LEVEL5  TEXT 'YOU CRAVED THE ANSWER BUT CAN YOU BEAR THE TRUTH? THE FUTURES DOORED INGRESS! WHAT LIES BEYOND? GUIDE YOUR CHOICE WITH COLLECTIVE WISDOM FOR ONE GATE SEVERS ALL CONNECTIONS. ONE STEP AWAY FROM THE DREAMWORLD OF EVERLASTING EBONY. YOU CALL IT OBLIVION.'
-01406  160E  00                    BYTE 00
-01407  160F  09 20 01   FT_END1    TEXT 'I AM OF THE STARS. I AM CALLED FOREVER. IT IS COLD BEYOND YOUR SUN WHERE WE COME FROM. WE PEOPLED YOUR PLANET. BUT THE FINAL EXPERIMENT HAS FAILED. THE EARTH HAS DIED. YOUR WORLD IS AT REST. BUT I OFFER YOU THIS. A FINAL SOLUTION. A CHANCE TO SURVIVE.'
-01408  170A  00                    BYTE 00
-01409  170B  17 05 20   FT_END2    TEXT 'WE CAN SAVE YOUR ILL FATED RACE WHO ARE LOST IN THE OCEAN OF SPACE. THROUGH THEIR EYES WE WILL SEE. WITH THEIR HANDS WE WILL CREATE. IN THEIR WORLD WE WILL BE FREE. WITH OUR MINDS WE WILL SHAPE THEIR FATE. MAKE US WHOLE MIGRATOR SOUL!'
-01410  17F5  00                    BYTE 00
-01411  17F6  14 08 05   FT_END3    TEXT 'THE FATE OF THE FINAL EXPERIMENT IS NOW IN YOUR HANDS'
-01412  182B  00                    BYTE 00
-01413  182C  14 08 05   FT_GAMEOVER TEXT 'THE EXPERIMENT IS OVER. I GROW WEARY. SO TIRED. LET THE DREAM OF CONFUSION LEAD YOU INTO THE VIRGIN LIGHT. BE ALL SEEING, BE BRAVE. BEGONE!'
-01414  18B7  00                    BYTE 00
-01415  18B8             
+00049  0810             SPRITE_MULTICOLOUR_ENABLE=$D01C 
+00050  0810             SPRITE_OVERFLOW = $D010
+00051  0810             SPRITE_BG_COLLISION = $D01F
+00052  0810             SPRITE_COLLISIONS = $D01E
+00053  0810             
+00054  0810             SPRITE0_X  = $D000
+00055  0810             SPRITE0_Y  = $D001
+00056  0810             SPRITE0_COLOUR = $D027
+00057  0810             SPRITE0_DATA = $2000
+00058  0810             SPRITE0_POINTER = $07F8
+00059  0810             
+00060  0810             SPRITE1_X  = $D002
+00061  0810             SPRITE1_Y  = $D003
+00062  0810             SPRITE1_COLOUR = $D028
+00063  0810             SPRITE1_DATA = $24C0
+00064  0810             SPRITE1_POINTER = $07F9
+00065  0810             
+00066  0810             SPRITE2_X  = $D004
+00067  0810             SPRITE2_Y  = $D005
+00068  0810             SPRITE2_COLOUR = $D029
+00069  0810             SPRITE2_POINTER = $07FA
+00070  0810             DOOR_SPRITE_DATA=$2700 
+00071  0810             
+00072  0810             SPRITE3_X  = $D006
+00073  0810             SPRITE3_Y  = $D007
+00074  0810             SPRITE3_COLOUR=$D02A 
+00075  0810             SPRITE3_POINTER=$07FB 
+00076  0810             SPRITE3_DATA=$2840 
+00077  0810             
+00078  0810             SPRITE4_X  = $D008
+00079  0810             SPRITE4_Y  = $D009
+00080  0810             SPRITE4_COLOUR=$D02B 
+00081  0810             SPRITE4_POINTER=$07FC 
+00082  0810             SPRITE4_DATA=$2980 
+00083  0810             
+00084  0810             SPRITE5_X  = $D00A
+00085  0810             SPRITE5_Y  = $D00B
+00086  0810             SPRITE5_COLOUR = $D02C
+00087  0810             SPRITE5_POINTER = $07FD
+00088  0810             SPRITE5_DATA = $2980
+00089  0810             
+00090  0810             SPRITE6_X  = $D00C
+00091  0810             SPRITE6_Y  = $D00D
+00092  0810             SPRITE6_COLOUR = $D02D
+00093  0810             SPRITE6_POINTER = $07FE
+00094  0810             SPRITE6_DATA = $2000
+00095  0810             
+00096  0810             SPRITE7_X  = $D00E
+00097  0810             SPRITE7_Y  = $D00F
+00098  0810             SPRITE7_COLOUR = $D02E
+00099  0810             SPRITE7_POINTER = $07FF
+00100  0810             SPRITE7_DATA = $2000
+00101  0810             
+00102  0810             
+00103  0810             ; CHARACTER SET
+00104  0810             CHARSET=$3800 
+00105  0810             CHARSET_LOOKUP = $D018
+00106  0810             
+00107  0810             ; TITLE SCREEN
+00108  0810             TITLE_BLOCK1 = $5400
+00109  0810             TITLE_BLOCK2 = $54FF
+00110  0810             TITLE_BLOCK3 = $55FE
+00111  0810             TITLE_BLOCK4 = $56FD
+00112  0810             
+00113  0810             ; LEVELS
+00114  0810             LEVEL1_BLOCK1 = $5000
+00115  0810             LEVEL1_BLOCK2 = $50FF
+00116  0810             LEVEL1_BLOCK3 = $51FE
+00117  0810             LEVEL1_BLOCK4 = $52FD
+00118  0810             
+00119  0810             ; PLAYER
+00120  0810             PLAYER_DYING_COUNTER = $7000
+00121  0810             PLAYER_LIVES = $7001
+00122  0810             PLAYER_MOVED_THIS_FRAME = $7002
+00123  0810             PLAYER_CURRENT_ACTION = $7003
+00124  0810             PLAYER_ACTION_SWITCH_COOLDOWN = $7004
+00125  0810             PLAYER_BULLET_DIRECTION = $7005
+00126  0810             PLAYER_BULLET_EXPLOSION_COUNTER = $7006
+00127  0810             DOOR1_OPEN_COUNTER = $7007
+00128  0810             DOOR2_OPEN_COUNTER = $7008
+00129  0810             LEVEL1_TILE_COUNTER=$7009 
+00130  0810             
+00131  0810             ; SOUND
+00132  0810             SID_VOICE1_LO_FREQ = $D400
+00133  0810             SID_VOICE1_HI_FREQ = $D401
+00134  0810             SID_VOICE1_CONTROL = $D404
+00135  0810             SID_ATTACK_DECAY = $D405
+00136  0810             SID_SUSTAIN = $D406
+00137  0810             SID_PULSE_LO_WIDTH = $D402
+00138  0810             SID_PULSE_HI_WIDTH = $D403
+00139  0810             SID_VOLUME = $D418
+00140  0810             
+00141  0810             *=SPRITE0_DATA 
+00142  2000             INCBIN     "PLAYERSPRITES.BIN"
+00143  24C0             
+00144  24C0             *=SPRITE1_DATA 
+00145  24C0             INCBIN     "BULLET.BIN"
+00146  2700             
+00147  2700             *=CHARSET
+00148  3800             INCBIN     "LEVELGEO.BIN"
+00149  4800             
+00150  4800             *=TITLE_BLOCK1 
+00151  5400             INCBIN     "TITLE.BIN"
+00152  57E8             
+00153  57E8             *=LEVEL1_BLOCK1 
+00154  5000             INCBIN     "LEVEL1.BIN"
+00155  53E8             
+00156  53E8             *=DOOR_SPRITE_DATA 
+00157  2700             INCBIN     "DOOR.BIN"
+00158  2980             
+00159  2980             *=SPRITE4_DATA 
+00160  2980             INCBIN     "BUTTON.BIN"
+00161  2A40             
+00162  2A40             DEFM       WAITFORRASTER
+00163  2A40             RASTERLOOP 
+00164  2A40                        LDA /1
+00165  2A40                        CMP RASTER_LINE
+00166  2A40                        BNE RASTERLOOP
+00167  2A40             ENDM
+00168  2A40             
+00169  2A40             DEFM       ENABLESPRITES
+00170  2A40                        LDA /1
+00171  2A40                        STA SPRITE_ENABLED
+00172  2A40                        
+00173  2A40             ENDM
+00174  2A40             
+00175  2A40             DEFM       ENABLESPRITE
+00176  2A40                        LDA SPRITE_ENABLED
+00177  2A40                        ORA /1
+00178  2A40                        STA SPRITE_ENABLED
+00179  2A40             ENDM
+00180  2A40             
+00181  2A40             DEFM       DISABLESPRITE
+00182  2A40                        LDA SPRITE_ENABLED
+00183  2A40                        AND /1
+00184  2A40                        STA SPRITE_ENABLED
+00185  2A40             ENDM
+00186  2A40             
+00187  2A40             DEFM       POINTTOSPRITEDATA
+00188  2A40                        LDA /1
+00189  2A40                        STA /2
+00190  2A40             ENDM
+00191  2A40             
+00192  2A40             DEFM       DRAWSCREEN
+00193  2A40                        LDX #0
+00194  2A40             @BLOCK1
+00195  2A40                        LDA /1,X
+00196  2A40                        TAY
+00197  2A40                        STA SCREEN_BLOCK1,X
+00198  2A40                        INX
+00199  2A40                        CPX #255
+00200  2A40                        BNE @BLOCK1
+00201  2A40                        LDX #0
+00202  2A40             @BLOCK2
+00203  2A40                        LDA /2,X
+00204  2A40                        TAY
+00205  2A40                        STA SCREEN_BLOCK2,X
+00206  2A40                        INX
+00207  2A40                        CPX #255
+00208  2A40                        BNE @BLOCK2
+00209  2A40                        LDX #0
+00210  2A40             @BLOCK3
+00211  2A40                        LDA /3,X
+00212  2A40                        TAY
+00213  2A40                        STA SCREEN_BLOCK3,X
+00214  2A40                        INX
+00215  2A40                        CPX #255
+00216  2A40                        BNE @BLOCK3
+00217  2A40                        LDX #0
+00218  2A40             @BLOCK4
+00219  2A40                        LDA /4,X
+00220  2A40                        TAY
+00221  2A40                        STA SCREEN_BLOCK4,X
+00222  2A40                        INX
+00223  2A40                        CPX #255
+00224  2A40                        BNE @BLOCK4
+00225  2A40                        LDX #0
+00226  2A40                        RTS
+00227  2A40             ENDM
+00228  2A40             
+00229  2A40             DEFM       PRINTCHAR
+00230  2A40                        LDA /1
+00231  2A40                        JSR CHAROUT
+00232  2A40                        RTS
+00233  2A40             ENDM
+00234  2A40             
+00235  2A40             DEFM       PRINTSTR
+00236  2A40                        LDX #0
+00237  2A40                        LDY #0
+00238  2A40             @LOOP
+00239  2A40                        LDA #255
+00240  2A40                        CMP RASTER_LINE
+00241  2A40                        BNE @LOOP
+00242  2A40                        LDA /1,X
+00243  2A40                        STA $0400,X
+00244  2A40                        INX
+00245  2A40                        CPX /2
+00246  2A40                        BNE @LOOP
+00247  2A40             ENDM
+00248  2A40             
+00249  2A40             DEFM       PLAYSOUND
+00250  2A40                        LDA /1
+00251  2A40                        STA SID_VOLUME
+00252  2A40                        LDA /2
+00253  2A40                        STA SID_VOICE1_LO_FREQ
+00254  2A40                        LDA /3
+00255  2A40                        STA SID_VOICE1_HI_FREQ
+00256  2A40                        LDA /4
+00257  2A40                        STA SID_ATTACK_DECAY
+00258  2A40                        LDA /5
+00259  2A40                        STA SID_SUSTAIN
+00260  2A40                        LDA #0
+00261  2A40                        STA SID_VOICE1_CONTROL
+00262  2A40                        LDA /6
+00263  2A40                        STA SID_VOICE1_CONTROL
+00264  2A40             ENDM
+00265  2A40             
+00266  2A40             DEFM       STORELEVEL1TILES
+00267  2A40                        ;STA $0527
+00268  2A40                        ;STA $04DB
+00269  2A40                        ;STA $052F
+00270  2A40                        ;STA $05F9
+00271  2A40                        ;STA $0645
+00272  2A40                        ;STA $05F1
+00273  2A40                        ;STA $063D
+00274  2A40             ENDM
+00275  2A40             ; JOYSTICK
+00276  2A40             JOYSTICK_INPUT = $02
+00277  2A40             JOYSTICK_INPUT1 = $02
+00278  2A40             JOYSTICK_MASK_RIGHT = %00001000
+00279  2A40             JOYSTICK_MASK_LEFT = %00000100
+00280  2A40             JOYSTICK_MASK_UP = %00000001
+00281  2A40             JOYSTICK_MASK_DOWN = %00000010
+00282  2A40             JOYSTICK_MASK_BTN = %00010000
+00283  2A40             
+00284  2A40             ; UI
+00285  2A40  70         BOX_SELECTOR_TL BYTE $70
+00286  2A41  6E         BOX_SELECTOR_TR BYTE $6E
+00287  2A42  6D         BOX_SELECTOR_BL BYTE $6D
+00288  2A43  7D         BOX_SELECTOR_BR BYTE $7D
+00289  2A44             
+00290  2A44             ; PLAYER
+00291  2A44  80         PLAYER_SPRITE_INDEX BYTE $80
+00292  2A45  15         PLAYER_X   BYTE $15
+00293  2A46  32         PLAYER_Y   BYTE $32
+00294  2A47             PLAYER_ACTION = #1
+00295  2A47             PLAYER_MOVED_UP = #2
+00296  2A47             PLAYER_MOVED_RIGHT = #4
+00297  2A47             PLAYER_MOVED_DOWN = #8
+00298  2A47             PLAYER_MOVED_LEFT = #16
+00299  2A47  80         PLAYER_IDLE BYTE $80
+00300  2A48  81         PLAYER_RIGHT BYTE $81
+00301  2A49  83         PLAYER_LEFT BYTE $83
+00302  2A4A  85         PLAYER_UP  BYTE $85
+00303  2A4B  87         PLAYER_DOWN BYTE $87
+00304  2A4C             
+00305  2A4C             ; PLAYER ACTIONS
+00306  2A4C             PLAYER_ACTION_SHOOT = #%00000001
+00307  2A4C             PLAYER_ACTION_TALK = #%00000010
+00308  2A4C             PLAYER_ACTION_USE = #%00000100
+00309  2A4C             
+00310  2A4C             ; PLAYER BULLET
+00311  2A4C  93         PLAYER_BULLET_SPRITE_INDEX BYTE $93
+00312  2A4D  15         PLAYER_BULLET_X BYTE $15
+00313  2A4E  32         PLAYER_BULLET_Y BYTE $32
+00314  2A4F  93         PLAYER_BULLET_HORI BYTE $93
+00315  2A50  94         PLAYER_BULLET_VERT BYTE $94
+00316  2A51  95         PLAYER_BULLET_NWSE BYTE $95
+00317  2A52  96         PLAYER_BULLET_SWNE BYTE $96
+00318  2A53  97         PLAYER_BULLET_EXPLOSION1 BYTE $97
+00319  2A54  98         PLAYER_BULLET_EXPLOSION2 BYTE $98
+00320  2A55  99         PLAYER_BULLET_EXPLOSION3 BYTE $99
+00321  2A56  9A         PLAYER_BULLET_EXPLOSION4 BYTE $9A
+00322  2A57  9B         PLAYER_BULLET_EXPLOSION5 BYTE $9B
+00323  2A58             
+00324  2A58             ;DOOR
+00325  2A58  9C         DOOR_SPRITE_INDEX BYTE $9C
+00326  2A59  F8         DOOR_X     BYTE $F8
+00327  2A5A  B3         DOOR_Y     BYTE $B3
+00328  2A5B  9C         DOOR_FRAME1 BYTE $9C
+00329  2A5C  9D         DOOR_FRAME2 BYTE $9D
+00330  2A5D  9E         DOOR_FRAME3 BYTE $9E
+00331  2A5E  9F         DOOR_FRAME4 BYTE $9F
+00332  2A5F  A0         DOOR_FRAME5 BYTE $A0
+00333  2A60             
+00334  2A60             ;HORIZONTAL DOOR
+00335  2A60  A1         HORI_DOOR_SPRITE_INDEX BYTE $A1
+00336  2A61  0F         HORI_DOOR_X BYTE $0F
+00337  2A62  A2         HORI_DOOR_Y BYTE $A2
+00338  2A63  A1         HORI_DOOR_FRAME1 BYTE $A1
+00339  2A64  A2         HORI_DOOR_FRAME2 BYTE $A2
+00340  2A65  A3         HORI_DOOR_FRAME3 BYTE $A3
+00341  2A66  A4         HORI_DOOR_FRAME4 BYTE $A4
+00342  2A67  A5         HORI_DOOR_FRAME5 BYTE $A5
+00343  2A68             
+00344  2A68             ; BUTTON
+00345  2A68  A6         BUTTON_SPRITE_INDEX BYTE $A6
+00346  2A69  F1         BUTTON_X   BYTE $F1
+00347  2A6A  DA         BUTTON_Y   BYTE $DA
+00348  2A6B  A6         BUTTON_FRAME1 BYTE $A6
+00349  2A6C  A7         BUTTON_FRAME2 BYTE $A7
+00350  2A6D  A8         BUTTON_FRAME3 BYTE $A8
+00351  2A6E             
+00352  2A6E  A6         BUTTON2_SPRITE_INDEX BYTE $A6
+00353  2A6F  00         BUTTON2_X  BYTE $0
+00354  2A70  80         BUTTON2_Y  BYTE $80
+00355  2A71  A6         BUTTON2_FRAME1 BYTE $A6
+00356  2A72  A7         BUTTON2_FRAME2 BYTE $A7
+00357  2A73  A8         BUTTON2_FRAME3 BYTE $A8
+00358  2A74             
+00359  2A74             ; NPCS
+00360  2A74  80         NPC1_SPRITE_INDEX BYTE $80
+00361  2A75  80         NPC2_SPRITE_INDEX BYTE $80
+00362  2A76  52         NPC1_X     BYTE $52
+00363  2A77  D7         NPC1_Y     BYTE $D7
+00364  2A78  0F         NPC2_X     BYTE $0F
+00365  2A79  80         NPC2_Y     BYTE $80
+00366  2A7A             
+00367  2A7A             ; ANIMATION
+00368  2A7A             PLAYER_RIGHT_ANIM1 = #$81
+00369  2A7A             PLAYER_RIGHT_ANIM2 = #$82
+00370  2A7A             PLAYER_LEFT_ANIM1 = #$83
+00371  2A7A             PLAYER_LEFT_ANIM2 = #$84
+00372  2A7A             PLAYER_UP_ANIM1 = #$85
+00373  2A7A             PLAYER_UP_ANIM2 = #$86
+00374  2A7A             PLAYER_DOWN_ANIM1 = #$87
+00375  2A7A             PLAYER_DOWN_ANIM2 = #$88
+00376  2A7A             PLAYER_DYING_ANIM1 = #$89
+00377  2A7A             PLAYER_DYING_ANIM2 = #$8A
+00378  2A7A             PLAYER_SHOOT_N = #$8B
+00379  2A7A             PLAYER_SHOOT_NE = #$8C
+00380  2A7A             PLAYER_SHOOT_E = #$8D
+00381  2A7A             PLAYER_SHOOT_SE = #$8E
+00382  2A7A             PLAYER_SHOOT_S = #$8F
+00383  2A7A             PLAYER_SHOOT_SW = #$90
+00384  2A7A             PLAYER_SHOOT_W = #$91
+00385  2A7A             PLAYER_SHOOT_NW = #$92
+00386  2A7A             
+00387  2A7A             ; COLOURS
+00388  2A7A             COLOUR_BLACK = #0
+00389  2A7A             COLOUR_WHITE = #1
+00390  2A7A             COLOUR_RED = #2
+00391  2A7A             COLOUR_CYAN = #3
+00392  2A7A             COLOUR_LIGHT_BLUE = #14
+00393  2A7A             
+00394  2A7A             *=$0820
+00395  0820  A2 00                 LDX #00
+00396  0822  8E 07 70              STX DOOR1_OPEN_COUNTER
+00397  0825  8E 08 70              STX DOOR2_OPEN_COUNTER
+00398  0828  8E 20 D0              STX BORDER_COLOUR
+00399  082B  8E 09 70              STX LEVEL1_TILE_COUNTER
+00400  082E  8E 06 70              STX PLAYER_BULLET_EXPLOSION_COUNTER
+00401  0831  A2 01                 LDX #1
+00402  0833  8E 00 70              STX PLAYER_DYING_COUNTER
+00403  0836  A2 00                 LDX COLOUR_BLACK
+00404  0838  8E 21 D0              STX BG_COLOUR
+00405  083B  20 71 0A              JSR CLEARSCREEN
+00406  083E  20 F4 0D              JSR DRAWTITLE
+00407  0841  20 98 0D              JSR INITCHARACTERSET
+00408  0844  20 C2 0E              JSR INITPLAYERSTATE
+00409  0847             TITLELOOP
+00410  0847  20 77 0A              JSR READJOYSTICK
+00411  084A  A5 02                 LDA JOYSTICK_INPUT
+00412  084C  29 01                 AND PLAYER_ACTION
+00413  084E  D0 03                 BNE INITGAME
+00414  0850  4C 47 08              JMP TITLELOOP
+00415  0853             INITGAME
+00416  0853  A2 00                 LDX COLOUR_BLACK
+00417  0855  8E 21 D0              STX BG_COLOUR
+00418  0858  A2 0E                 LDX COLOUR_LIGHT_BLUE
+00419  085A  8E 86 02              STX TEXT_COLOUR
+00420  085D  20 71 0A              JSR CLEARSCREEN
+00421  0860  20 B8 0D              JSR DRAWLEVEL
+00422  0863  20 D7 0C              JSR INITSPRITES
+00423  0866             GAMELOOP
+00424  0866             
+00425  0866             
+00426  0866             RASTERLOOP 
+00427  0866  A9 FF                 LDA #255
+00428  0868  CD 12 D0              CMP RASTER_LINE
+00429  086B  D0 F9                 BNE RASTERLOOP
+00430  086D  A2 00                 LDX #0
+00431  086F  8E 02 70              STX PLAYER_MOVED_THIS_FRAME
+00432  0872  AD 00 70              LDA PLAYER_DYING_COUNTER
+00433  0875  C9 00                 CMP #0
+00434  0877  D0 66                 BNE @HANDLEDYING
+00435  0879  20 77 0A              JSR READJOYSTICK
+00436  087C  20 04 0C              JSR UPDATEPLAYERANIMATIONFRAME
+00437  087F  20 6E 0D              JSR UPDATEPLAYERSPRITE
+00438  0882  20 35 0B              JSR MOVEPLAYER
+00439  0885  20 6F 0C              JSR UPDATEPLAYERSPRITEPOSITION
+00440  0888  20 30 0E              JSR CHECKFORWALLCOLLISION
+00441  088B  20 3E 0E              JSR CHECKFORSPRITECOLLISION
+00442  088E  20 7C 0C              JSR UPDATEPLAYERBULLETPOSITION
+00443  0891  20 54 12              JSR HANDLEBULLETEXPLOSION
+00444  0894  AD 01 70              LDA PLAYER_LIVES
+00445  0897  09 30                 ORA #48
+00446  0899  8D C9 07              STA PLAYER_LIVES_POSITION
+00447  089C                        
+00448  089C  AD 07 70              LDA DOOR1_OPEN_COUNTER
+00449  089F  C9 00                 CMP #0
+00450  08A1  D0 65                 BNE @HANDLEDOOR1OPEN
+00451  08A3             
+00452  08A3  AD 08 70              LDA DOOR2_OPEN_COUNTER
+00453  08A6  C9 00                 CMP #0
+00454  08A8  D0 25                 BNE @OPEND2
+00455  08AA             
+00456  08AA  20 D6 0A              JSR READJOYSTICK1
+00457  08AD  20 07 10              JSR CHECKFORSELECTEDACTIONCHANGE
+00458  08B0             
+00459  08B0  AD 02 70              LDA PLAYER_MOVED_THIS_FRAME
+00460  08B3  C9 01                 CMP #$1
+00461  08B5  D0 07                 BNE @ACTIONSWITCH
+00462  08B7  20 EF 10              JSR CHECKFORACTION ; HANDLES MOVING THE BULLET IN CASES WHERE NO ACTION WAS PROCESSES. TODO: RENAME
+00463  08BA                        ;JMP RESETLOOP
+00464  08BA  4C 66 08              JMP GAMELOOP
+00465  08BD  60                    RTS
+00466  08BE             @ACTIONSWITCH 
+00467  08BE  AD 03 70              LDA PLAYER_CURRENT_ACTION
+00468  08C1  C9 01                 CMP PLAYER_ACTION_SHOOT
+00469  08C3  F0 0E                 BEQ @HANDLEACTION
+00470  08C5  C9 02                 CMP PLAYER_ACTION_TALK
+00471  08C7  F0 03                 BEQ @TRIGGERTALK
+00472  08C9                        
+00473  08C9  4C 66 08              JMP GAMELOOP
+00474  08CC             @TRIGGERTALK 
+00475  08CC  4C CB 12              JMP HANDLETALK
+00476  08CF             @OPEND2
+00477  08CF  4C 11 0A              JMP HANDLEDOOR2OPEN
+00478  08D2  60                    RTS
+00479  08D3             @HANDLEACTION 
+00480  08D3  20 D6 0A              JSR READJOYSTICK1
+00481  08D6  20 69 0F              JSR HANDLEACTION
+00482  08D9  20 6E 0D              JSR UPDATEPLAYERSPRITE
+00483  08DC  4C 66 08              JMP GAMELOOP
+00484  08DF             @HANDLEDYING 
+00485  08DF  20 F6 0E              JSR PLAYZAP
+00486  08E2  20 6E 0D              JSR UPDATEPLAYERSPRITE
+00487  08E5  AE 00 70              LDX PLAYER_DYING_COUNTER
+00488  08E8  E0 40                 CPX #64
+00489  08EA  F0 7C                 BEQ @CHECKLIVES
+00490  08EC  E8                    INX
+00491  08ED  8E 00 70              STX PLAYER_DYING_COUNTER
+00492  08F0  AD 44 2A              LDA PLAYER_SPRITE_INDEX
+00493  08F3  C9 8A                 CMP PLAYER_DYING_ANIM2
+00494  08F5  F0 08                 BEQ @DYINGFRAME1
+00495  08F7  A2 8A                 LDX PLAYER_DYING_ANIM2
+00496  08F9  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00497  08FC  4C 66 08              JMP GAMELOOP
+00498  08FF             @DYINGFRAME1 
+00499  08FF  A2 89                 LDX PLAYER_DYING_ANIM1
+00500  0901  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00501  0904  4C 66 08              JMP GAMELOOP
+00502  0907  60                    RTS
+00503  0908             @HANDLEDOOR1OPEN 
+00504  0908  AD 07 70              LDA DOOR1_OPEN_COUNTER
+00505  090B  AA                    TAX
+00506  090C  E8                    INX
+00507  090D  8E 07 70              STX DOOR1_OPEN_COUNTER
+00508  0910  C9 01                 CMP #1
+00509  0912  F0 14                 BEQ @DOOR1OPENFRAME1
+00510  0914  C9 02                 CMP #2
+00511  0916  F0 1C                 BEQ @DOOR1OPENFRAME2
+00512  0918  C9 03                 CMP #3
+00513  091A  F0 24                 BEQ @DOOR1OPENFRAME3
+00514  091C  C9 04                 CMP #4
+00515  091E  F0 2C                 BEQ @DOOR1OPENFRAME4
+00516  0920  C9 05                 CMP #5
+00517  0922  F0 34                 BEQ @DESTROYDOOR1
+00518  0924  4C 66 08              JMP GAMELOOP
+00519  0927  60                    RTS
+00520  0928             @DOOR1OPENFRAME1 
+00521  0928  AD 5C 2A              LDA DOOR_FRAME2
+00522  092B  8D 58 2A              STA DOOR_SPRITE_INDEX
+00523  092E  20 7C 0D              JSR UPDATEDOORSPRITE
+00524  0931  4C 66 08              JMP GAMELOOP
+00525  0934             @DOOR1OPENFRAME2 
+00526  0934  AD 5D 2A              LDA DOOR_FRAME3
+00527  0937  8D 58 2A              STA DOOR_SPRITE_INDEX
+00528  093A  20 7C 0D              JSR UPDATEDOORSPRITE
+00529  093D  4C 66 08              JMP GAMELOOP
+00530  0940             @DOOR1OPENFRAME3 
+00531  0940  AD 5E 2A              LDA DOOR_FRAME4
+00532  0943  8D 58 2A              STA DOOR_SPRITE_INDEX
+00533  0946  20 7C 0D              JSR UPDATEDOORSPRITE
+00534  0949  4C 66 08              JMP GAMELOOP
+00535  094C             @DOOR1OPENFRAME4 
+00536  094C  AD 5F 2A              LDA DOOR_FRAME5
+00537  094F  8D 58 2A              STA DOOR_SPRITE_INDEX
+00538  0952  20 7C 0D              JSR UPDATEDOORSPRITE
+00539  0955  4C 66 08              JMP GAMELOOP
+00540  0958             @DESTROYDOOR1 
+00541  0958             
+00542  0958             
+00543  0958  AD 15 D0              LDA SPRITE_ENABLED
+00544  095B  29 FB                 AND #%11111011
+00545  095D  8D 15 D0              STA SPRITE_ENABLED
+00546  0960  A2 00                 LDX #0
+00547  0962  8E 07 70              STX DOOR1_OPEN_COUNTER
+00548  0965  4C 66 08              JMP GAMELOOP
+00549  0968             @CHECKLIVES 
+00550  0968  AE 01 70              LDX PLAYER_LIVES
+00551  096B  E0 00                 CPX #0
+00552  096D  F0 20                 BEQ @GAMEOVER
+00553  096F             @RESPAWN
+00554  096F  AD 10 D0              LDA SPRITE_OVERFLOW
+00555  0972  29 FE                 AND #%11111110
+00556  0974  8D 10 D0              STA SPRITE_OVERFLOW
+00557  0977  A2 4A                 LDX #$4A
+00558  0979  8E 45 2A              STX PLAYER_X
+00559  097C  A2 5E                 LDX #$5E
+00560  097E  8E 46 2A              STX PLAYER_Y
+00561  0981  A2 00                 LDX #0
+00562  0983  8E 00 70              STX PLAYER_DYING_COUNTER
+00563  0986  AE 47 2A              LDX PLAYER_IDLE
+00564  0989  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00565  098C  4C 66 08              JMP GAMELOOP
+00566  098F             @GAMEOVER
+00567  098F  20 71 0A              JSR CLEARSCREEN
+00568  0992             
+00569  0992             
+00570  0992  A9 00                 LDA #%00000000
+00571  0994  8D 15 D0              STA SPRITE_ENABLED
+00572  0997                        
+00573  0997  A9 00                 LDA COLOUR_BLACK
+00574  0999  8D 86 02              STA TEXT_COLOUR
+00575  099C  A9 02                 LDA COLOUR_RED
+00576  099E  8D 21 D0              STA BG_COLOUR
+00577  09A1             
+00578  09A1             
+00579  09A1  A2 00                 LDX #0
+00580  09A3  A0 00                 LDY #0
+00581  09A5             @LOOP
+00582  09A5  A9 FF                 LDA #255
+00583  09A7  CD 12 D0              CMP RASTER_LINE
+00584  09AA  D0 F9                 BNE @LOOP
+00585  09AC  BD 5F 1D              LDA FT_GAMEOVER,X
+00586  09AF  9D 00 04              STA $0400,X
+00587  09B2  E8                    INX
+00588  09B3  E0 8B                 CPX #$8B
+00589  09B5  D0 EE                 BNE @LOOP
+00590  09B7             @GAMEOVERLOOP 
+00591  09B7  20 77 0A              JSR READJOYSTICK
+00592  09BA  A5 02                 LDA JOYSTICK_INPUT
+00593  09BC  2D 4A 2A              AND PLAYER_UP
+00594  09BF  D0 04                 BNE @GOTOTITLE
+00595  09C1  4C B7 09              JMP @GAMEOVERLOOP
+00596  09C4  60                    RTS
+00597  09C5             @GOTOTITLE 
+00598  09C5  A2 00                 LDX COLOUR_BLACK
+00599  09C7  8E 21 D0              STX BG_COLOUR
+00600  09CA  A2 0E                 LDX COLOUR_LIGHT_BLUE
+00601  09CC  8E 86 02              STX TEXT_COLOUR
+00602  09CF             
+00603  09CF             
+00604  09CF  A9 00                 LDA #%00000000
+00605  09D1  8D 15 D0              STA SPRITE_ENABLED
+00606  09D4                        
+00607  09D4  20 71 0A              JSR CLEARSCREEN
+00608  09D7  20 F4 0D              JSR DRAWTITLE
+00609  09DA  A2 05                 LDX #5
+00610  09DC  8E 01 70              STX PLAYER_LIVES
+00611  09DF  A2 00                 LDX #0
+00612  09E1  8E 00 70              STX PLAYER_DYING_COUNTER
+00613  09E4  4C 47 08              JMP TITLELOOP
+00614  09E7             NEXTLEVEL
+00615  09E7  20 71 0A              JSR CLEARSCREEN
+00616  09EA             
+00617  09EA             
+00618  09EA  A9 00                 LDA #%00000000
+00619  09EC  8D 15 D0              STA SPRITE_ENABLED
+00620  09EF                        
+00621  09EF  A9 01                 LDA COLOUR_WHITE
+00622  09F1  8D 86 02              STA TEXT_COLOUR
+00623  09F4             
+00624  09F4             
+00625  09F4  A2 00                 LDX #0
+00626  09F6  A0 00                 LDY #0
+00627  09F8             @LOOP
+00628  09F8  A9 FF                 LDA #255
+00629  09FA  CD 12 D0              CMP RASTER_LINE
+00630  09FD  D0 F9                 BNE @LOOP
+00631  09FF  BD 36 13              LDA FT_LEVEL1,X
+00632  0A02  9D 00 04              STA $0400,X
+00633  0A05  E8                    INX
+00634  0A06  E0 8D                 CPX #$8D
+00635  0A08  D0 EE                 BNE @LOOP
+00636  0A0A  AE 01 70              LDX PLAYER_LIVES
+00637  0A0D  4C 47 08              JMP TITLELOOP
+00638  0A10             @EXIT
+00639  0A10  60                    RTS
+00640  0A11             HANDLEDOOR2OPEN 
+00641  0A11  AD 08 70              LDA DOOR2_OPEN_COUNTER
+00642  0A14  AA                    TAX
+00643  0A15  E8                    INX
+00644  0A16  8E 08 70              STX DOOR2_OPEN_COUNTER
+00645  0A19  C9 01                 CMP #1
+00646  0A1B  F0 14                 BEQ @DOOR2OPENFRAME1
+00647  0A1D  C9 02                 CMP #2
+00648  0A1F  F0 1C                 BEQ @DOOR2OPENFRAME2
+00649  0A21  C9 03                 CMP #3
+00650  0A23  F0 24                 BEQ @DOOR2OPENFRAME3
+00651  0A25  C9 04                 CMP #4
+00652  0A27  F0 2C                 BEQ @DOOR2OPENFRAME4
+00653  0A29  C9 05                 CMP #5
+00654  0A2B  F0 34                 BEQ DESTROYDOOR2
+00655  0A2D  4C 66 08              JMP GAMELOOP
+00656  0A30  60                    RTS
+00657  0A31             @DOOR2OPENFRAME1 
+00658  0A31  AD 64 2A              LDA HORI_DOOR_FRAME2
+00659  0A34  8D 60 2A              STA HORI_DOOR_SPRITE_INDEX
+00660  0A37  20 83 0D              JSR UPDATEHORIDOORSPRITE
+00661  0A3A  4C 66 08              JMP GAMELOOP
+00662  0A3D             @DOOR2OPENFRAME2 
+00663  0A3D  AD 65 2A              LDA HORI_DOOR_FRAME3
+00664  0A40  8D 60 2A              STA HORI_DOOR_SPRITE_INDEX
+00665  0A43  20 83 0D              JSR UPDATEHORIDOORSPRITE
+00666  0A46  4C 66 08              JMP GAMELOOP
+00667  0A49             @DOOR2OPENFRAME3 
+00668  0A49  AD 66 2A              LDA HORI_DOOR_FRAME4
+00669  0A4C  8D 60 2A              STA HORI_DOOR_SPRITE_INDEX
+00670  0A4F  20 83 0D              JSR UPDATEHORIDOORSPRITE
+00671  0A52  4C 66 08              JMP GAMELOOP
+00672  0A55             @DOOR2OPENFRAME4 
+00673  0A55  AD 5F 2A              LDA DOOR_FRAME5
+00674  0A58  8D 60 2A              STA HORI_DOOR_SPRITE_INDEX
+00675  0A5B  20 7C 0D              JSR UPDATEDOORSPRITE
+00676  0A5E  4C 66 08              JMP GAMELOOP
+00677  0A61             DESTROYDOOR2 
+00678  0A61             
+00679  0A61             
+00680  0A61  AD 15 D0              LDA SPRITE_ENABLED
+00681  0A64  29 F7                 AND #%11110111
+00682  0A66  8D 15 D0              STA SPRITE_ENABLED
+00683  0A69  A2 00                 LDX #0
+00684  0A6B  8E 08 70              STX DOOR2_OPEN_COUNTER
+00685  0A6E  4C 66 08              JMP GAMELOOP
+00686  0A71             
+00687  0A71             
+00688  0A71             
+00689  0A71             CLEARSCREEN 
+00690  0A71  A9 93                 LDA #147
+00691  0A73  20 D2 FF              JSR CHAROUT
+00692  0A76  60                    RTS
+00693  0A77             
+00694  0A77             
+00695  0A77             READJOYSTICK 
+00696  0A77  A0 00                 LDY #0
+00697  0A79  84 02                 STY JOYSTICK_INPUT
+00698  0A7B  20 8B 0A              JSR @CHECKRIGHT
+00699  0A7E  20 9A 0A              JSR @CHECKLEFT
+00700  0A81  20 A9 0A              JSR @CHECKUP
+00701  0A84  20 B8 0A              JSR @CHECKDOWN
+00702  0A87  20 C0 0A              JSR @CHECKBTN
+00703  0A8A  60                    RTS
+00704  0A8B             @CHECKRIGHT 
+00705  0A8B  AD 00 DC              LDA JOYSTICK_PORT2
+00706  0A8E  29 08                 AND #JOYSTICK_MASK_RIGHT
+00707  0A90  F0 01                 BEQ @INPUTRIGHT
+00708  0A92  60                    RTS
+00709  0A93             @INPUTRIGHT 
+00710  0A93  A5 02                 LDA JOYSTICK_INPUT
+00711  0A95  09 04                 ORA #4
+00712  0A97  85 02                 STA JOYSTICK_INPUT
+00713  0A99  60                    RTS
+00714  0A9A             @CHECKLEFT 
+00715  0A9A  AD 00 DC              LDA JOYSTICK_PORT2
+00716  0A9D  29 04                 AND #JOYSTICK_MASK_LEFT
+00717  0A9F  F0 01                 BEQ @INPUTLEFT
+00718  0AA1  60                    RTS
+00719  0AA2             @INPUTLEFT 
+00720  0AA2  A5 02                 LDA JOYSTICK_INPUT
+00721  0AA4  09 10                 ORA #16
+00722  0AA6  85 02                 STA JOYSTICK_INPUT
+00723  0AA8  60                    RTS
+00724  0AA9             @CHECKUP
+00725  0AA9  AD 00 DC              LDA JOYSTICK_PORT2
+00726  0AAC  29 01                 AND #JOYSTICK_MASK_UP
+00727  0AAE  F0 01                 BEQ @INPUTUP
+00728  0AB0  60                    RTS
+00729  0AB1             @INPUTUP
+00730  0AB1  A5 02                 LDA JOYSTICK_INPUT
+00731  0AB3  09 02                 ORA #2
+00732  0AB5  85 02                 STA JOYSTICK_INPUT
+00733  0AB7  60                    RTS
+00734  0AB8             @CHECKDOWN 
+00735  0AB8  AD 00 DC              LDA JOYSTICK_PORT2
+00736  0ABB  29 02                 AND #JOYSTICK_MASK_DOWN
+00737  0ABD  F0 09                 BEQ @INPUTDOWN
+00738  0ABF  60                    RTS
+00739  0AC0             @CHECKBTN
+00740  0AC0  AD 00 DC              LDA JOYSTICK_PORT2
+00741  0AC3  29 10                 AND #JOYSTICK_MASK_BTN
+00742  0AC5  F0 08                 BEQ @INPUTBTN
+00743  0AC7  60                    RTS
+00744  0AC8             @INPUTDOWN 
+00745  0AC8  A5 02                 LDA JOYSTICK_INPUT
+00746  0ACA  09 08                 ORA #8
+00747  0ACC  85 02                 STA JOYSTICK_INPUT
+00748  0ACE  60                    RTS
+00749  0ACF             @INPUTBTN
+00750  0ACF  A5 02                 LDA JOYSTICK_INPUT
+00751  0AD1  09 01                 ORA #1
+00752  0AD3  85 02                 STA JOYSTICK_INPUT
+00753  0AD5  60                    RTS
+00754  0AD6             
+00755  0AD6             READJOYSTICK1 
+00756  0AD6  A0 00                 LDY #0
+00757  0AD8  84 02                 STY JOYSTICK_INPUT1
+00758  0ADA  20 EA 0A              JSR @CHECKRIGHT
+00759  0ADD  20 F9 0A              JSR @CHECKLEFT
+00760  0AE0  20 08 0B              JSR @CHECKUP
+00761  0AE3  20 17 0B              JSR @CHECKDOWN
+00762  0AE6  20 1F 0B              JSR @CHECKBTN
+00763  0AE9  60                    RTS
+00764  0AEA             @CHECKRIGHT 
+00765  0AEA  AD 01 DC              LDA JOYSTICK_PORT1
+00766  0AED  29 08                 AND #JOYSTICK_MASK_RIGHT
+00767  0AEF  F0 01                 BEQ @INPUTRIGHT
+00768  0AF1  60                    RTS
+00769  0AF2             @INPUTRIGHT 
+00770  0AF2  A5 02                 LDA JOYSTICK_INPUT1
+00771  0AF4  09 04                 ORA #4
+00772  0AF6  85 02                 STA JOYSTICK_INPUT1
+00773  0AF8  60                    RTS
+00774  0AF9             @CHECKLEFT 
+00775  0AF9  AD 01 DC              LDA JOYSTICK_PORT1
+00776  0AFC  29 04                 AND #JOYSTICK_MASK_LEFT
+00777  0AFE  F0 01                 BEQ @INPUTLEFT
+00778  0B00  60                    RTS
+00779  0B01             @INPUTLEFT 
+00780  0B01  A5 02                 LDA JOYSTICK_INPUT1
+00781  0B03  09 10                 ORA #16
+00782  0B05  85 02                 STA JOYSTICK_INPUT1
+00783  0B07  60                    RTS
+00784  0B08             @CHECKUP
+00785  0B08  AD 01 DC              LDA JOYSTICK_PORT1
+00786  0B0B  29 01                 AND #JOYSTICK_MASK_UP
+00787  0B0D  F0 01                 BEQ @INPUTUP
+00788  0B0F  60                    RTS
+00789  0B10             @INPUTUP
+00790  0B10  A5 02                 LDA JOYSTICK_INPUT1
+00791  0B12  09 02                 ORA #2
+00792  0B14  85 02                 STA JOYSTICK_INPUT1
+00793  0B16  60                    RTS
+00794  0B17             @CHECKDOWN 
+00795  0B17  AD 01 DC              LDA JOYSTICK_PORT1
+00796  0B1A  29 02                 AND #JOYSTICK_MASK_DOWN
+00797  0B1C  F0 09                 BEQ @INPUTDOWN
+00798  0B1E  60                    RTS
+00799  0B1F             @CHECKBTN
+00800  0B1F  AD 01 DC              LDA JOYSTICK_PORT1
+00801  0B22  29 10                 AND #JOYSTICK_MASK_BTN
+00802  0B24  F0 08                 BEQ @INPUTBTN
+00803  0B26  60                    RTS
+00804  0B27             @INPUTDOWN 
+00805  0B27  A5 02                 LDA JOYSTICK_INPUT1
+00806  0B29  09 08                 ORA #8
+00807  0B2B  85 02                 STA JOYSTICK_INPUT1
+00808  0B2D  60                    RTS
+00809  0B2E             @INPUTBTN
+00810  0B2E  A5 02                 LDA JOYSTICK_INPUT1
+00811  0B30  09 01                 ORA #1
+00812  0B32  85 02                 STA JOYSTICK_INPUT1
+00813  0B34  60                    RTS
+00814  0B35             
+00815  0B35             
+00816  0B35             
+00817  0B35             MOVEPLAYER 
+00818  0B35  20 77 0A              JSR READJOYSTICK
+00819  0B38  20 45 0B              JSR @CHECKUP
+00820  0B3B  20 A5 0B              JSR @CHECKDOWN
+00821  0B3E  20 BB 0B              JSR @CHECKLEFT
+00822  0B41  20 5B 0B              JSR @CHECKRIGHT
+00823  0B44  60                    RTS
+00824  0B45             @CHECKUP
+00825  0B45  A5 02                 LDA JOYSTICK_INPUT
+00826  0B47  29 02                 AND PLAYER_MOVED_UP
+00827  0B49  F0 41                 BEQ @CONTINUE
+00828  0B4B  AC 46 2A              LDY PLAYER_Y
+00829  0B4E  88                    DEY
+00830  0B4F  8C 46 2A              STY PLAYER_Y
+00831  0B52  A0 01                 LDY #$1
+00832  0B54  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
+00833  0B57  20 D2 0E              JSR PLAYFOOTSTEP
+00834  0B5A  60                    RTS
+00835  0B5B             @CHECKRIGHT 
+00836  0B5B  A5 02                 LDA JOYSTICK_INPUT
+00837  0B5D  29 04                 AND PLAYER_MOVED_RIGHT
+00838  0B5F  F0 2B                 BEQ @CONTINUE
+00839  0B61  AE 45 2A              LDX PLAYER_X
+00840  0B64  E8                    INX
+00841  0B65  8E 45 2A              STX PLAYER_X
+00842  0B68  A0 01                 LDY #$1
+00843  0B6A  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
+00844  0B6D  20 D2 0E              JSR PLAYFOOTSTEP
+00845  0B70                        ;RIGHT SIDE WRAP
+00846  0B70  AD 10 D0              LDA SPRITE_OVERFLOW
+00847  0B73  29 01                 AND #%00000001
+00848  0B75  D0 16                 BNE @CHECKWRAP
+00849  0B77  AE 45 2A              LDX PLAYER_X
+00850  0B7A  E0 FF                 CPX #255
+00851  0B7C  D0 0E                 BNE @CONTINUE
+00852  0B7E  AD 10 D0              LDA SPRITE_OVERFLOW
+00853  0B81  09 01                 ORA #%00000001
+00854  0B83  8D 10 D0              STA SPRITE_OVERFLOW
+00855  0B86  A2 00                 LDX #0
+00856  0B88  8E 45 2A              STX PLAYER_X
+00857  0B8B  60                    RTS
+00858  0B8C             @CONTINUE
+00859  0B8C  60                    RTS
+00860  0B8D             @CHECKWRAP 
+00861  0B8D  AE 45 2A              LDX PLAYER_X
+00862  0B90  E0 30                 CPX #48
+00863  0B92  D0 F8                 BNE @CONTINUE
+00864  0B94  A2 00                 LDX #0
+00865  0B96  8E 45 2A              STX PLAYER_X
+00866  0B99  AD 10 D0              LDA SPRITE_OVERFLOW
+00867  0B9C  29 FE                 AND #%11111110
+00868  0B9E  8D 10 D0              STA SPRITE_OVERFLOW
+00869  0BA1  20 E7 09              JSR NEXTLEVEL
+00870  0BA4  60                    RTS
+00871  0BA5             @CHECKDOWN 
+00872  0BA5  A5 02                 LDA JOYSTICK_INPUT
+00873  0BA7  29 08                 AND PLAYER_MOVED_DOWN
+00874  0BA9  F0 E1                 BEQ @CONTINUE
+00875  0BAB  AC 46 2A              LDY PLAYER_Y
+00876  0BAE  C8                    INY
+00877  0BAF  8C 46 2A              STY PLAYER_Y
+00878  0BB2  A0 01                 LDY #$1
+00879  0BB4  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
+00880  0BB7  20 D2 0E              JSR PLAYFOOTSTEP
+00881  0BBA  60                    RTS
+00882  0BBB             @CHECKLEFT 
+00883  0BBB  A5 02                 LDA JOYSTICK_INPUT
+00884  0BBD  29 10                 AND PLAYER_MOVED_LEFT
+00885  0BBF  F0 CB                 BEQ @CONTINUE
+00886  0BC1  AE 45 2A              LDX PLAYER_X
+00887  0BC4  CA                    DEX
+00888  0BC5  8E 45 2A              STX PLAYER_X
+00889  0BC8  A0 01                 LDY #$1
+00890  0BCA  8C 02 70              STY PLAYER_MOVED_THIS_FRAME
+00891  0BCD  20 D2 0E              JSR PLAYFOOTSTEP
+00892  0BD0                        ; LEFT SIDE WRAP
+00893  0BD0  AD 10 D0              LDA SPRITE_OVERFLOW
+00894  0BD3  29 01                 AND #%00000001
+00895  0BD5  D0 18                 BNE @CHECKLEFTWRAP
+00896  0BD7  AD 10 D0              LDA SPRITE_OVERFLOW
+00897  0BDA  AE 45 2A              LDX PLAYER_X
+00898  0BDD  E0 00                 CPX #0
+00899  0BDF  D0 AB                 BNE @CONTINUE
+00900  0BE1  AD 10 D0              LDA SPRITE_OVERFLOW
+00901  0BE4  09 01                 ORA #%00000001
+00902  0BE6  8D 10 D0              STA SPRITE_OVERFLOW
+00903  0BE9  A9 50                 LDA #80
+00904  0BEB  8D 45 2A              STA PLAYER_X
+00905  0BEE  60                    RTS
+00906  0BEF             @CHECKLEFTWRAP 
+00907  0BEF  AE 45 2A              LDX PLAYER_X
+00908  0BF2  E0 00                 CPX #0
+00909  0BF4  D0 96                 BNE @CONTINUE
+00910  0BF6  AD 10 D0              LDA SPRITE_OVERFLOW
+00911  0BF9  29 FE                 AND #%11111110
+00912  0BFB  8D 10 D0              STA SPRITE_OVERFLOW
+00913  0BFE  A2 FF                 LDX #255
+00914  0C00  8E 45 2A              STX PLAYER_X
+00915  0C03  60                    RTS
+00916  0C04             
+00917  0C04             
+00918  0C04             
+00919  0C04             UPDATEPLAYERANIMATIONFRAME 
+00920  0C04  A5 02                 LDA JOYSTICK_INPUT
+00921  0C06  29 04                 AND PLAYER_MOVED_RIGHT
+00922  0C08  D0 19                 BNE @SETRIGHT
+00923  0C0A  A5 02                 LDA JOYSTICK_INPUT
+00924  0C0C  29 10                 AND PLAYER_MOVED_LEFT
+00925  0C0E  D0 26                 BNE @SETLEFT
+00926  0C10  A5 02                 LDA JOYSTICK_INPUT
+00927  0C12  29 02                 AND PLAYER_MOVED_UP
+00928  0C14  D0 33                 BNE @SETUP
+00929  0C16  A5 02                 LDA JOYSTICK_INPUT
+00930  0C18  29 08                 AND PLAYER_MOVED_DOWN
+00931  0C1A  D0 40                 BNE @SETDOWN
+00932  0C1C  AE 47 2A              LDX PLAYER_IDLE
+00933  0C1F  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00934  0C22  60                    RTS
+00935  0C23             @SETRIGHT
+00936  0C23  AE 44 2A              LDX PLAYER_SPRITE_INDEX
+00937  0C26  E0 82                 CPX PLAYER_RIGHT_ANIM2
+00938  0C28  F0 06                 BEQ @RIGHTFRAME1
+00939  0C2A  A2 82                 LDX PLAYER_RIGHT_ANIM2
+00940  0C2C  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00941  0C2F  60                    RTS
+00942  0C30             @RIGHTFRAME1 
+00943  0C30  A2 81                 LDX PLAYER_RIGHT_ANIM1
+00944  0C32  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00945  0C35  60                    RTS
+00946  0C36             @SETLEFT
+00947  0C36  AE 44 2A              LDX PLAYER_SPRITE_INDEX
+00948  0C39  E0 84                 CPX PLAYER_LEFT_ANIM2
+00949  0C3B  F0 06                 BEQ @LEFTFRAME1
+00950  0C3D  A2 84                 LDX PLAYER_LEFT_ANIM2
+00951  0C3F  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00952  0C42  60                    RTS
+00953  0C43             @LEFTFRAME1 
+00954  0C43  A2 83                 LDX PLAYER_LEFT_ANIM1
+00955  0C45  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00956  0C48  60                    RTS
+00957  0C49             @SETUP
+00958  0C49  AE 44 2A              LDX PLAYER_SPRITE_INDEX
+00959  0C4C  E0 86                 CPX PLAYER_UP_ANIM2
+00960  0C4E  F0 06                 BEQ @UPFRAME1
+00961  0C50  A2 86                 LDX PLAYER_UP_ANIM2
+00962  0C52  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00963  0C55  60                    RTS
+00964  0C56             @UPFRAME1
+00965  0C56  A2 85                 LDX PLAYER_UP_ANIM1
+00966  0C58  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00967  0C5B  60                    RTS
+00968  0C5C             @SETDOWN
+00969  0C5C  AE 44 2A              LDX PLAYER_SPRITE_INDEX
+00970  0C5F  E0 88                 CPX PLAYER_DOWN_ANIM2
+00971  0C61  F0 06                 BEQ @DOWNFRAME1
+00972  0C63  A2 88                 LDX PLAYER_DOWN_ANIM2
+00973  0C65  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00974  0C68  60                    RTS
+00975  0C69             @DOWNFRAME1 
+00976  0C69  A2 87                 LDX PLAYER_DOWN_ANIM1
+00977  0C6B  8E 44 2A              STX PLAYER_SPRITE_INDEX
+00978  0C6E  60                    RTS
+00979  0C6F             
+00980  0C6F             
+00981  0C6F             UPDATEPLAYERSPRITEPOSITION 
+00982  0C6F  AD 45 2A              LDA PLAYER_X
+00983  0C72  8D 00 D0              STA SPRITE0_X
+00984  0C75  AD 46 2A              LDA PLAYER_Y
+00985  0C78  8D 01 D0              STA SPRITE0_Y
+00986  0C7B  60                    RTS
+00987  0C7C             
+00988  0C7C             UPDATEPLAYERBULLETPOSITION 
+00989  0C7C  AD 4D 2A              LDA PLAYER_BULLET_X
+00990  0C7F  8D 02 D0              STA SPRITE1_X
+00991  0C82  AD 4E 2A              LDA PLAYER_BULLET_Y
+00992  0C85  8D 03 D0              STA SPRITE1_Y
+00993  0C88  60                    RTS
+00994  0C89             
+00995  0C89             UPDATEDOORPOSITION 
+00996  0C89  AD 59 2A              LDA DOOR_X
+00997  0C8C  8D 04 D0              STA SPRITE2_X
+00998  0C8F  AD 5A 2A              LDA DOOR_Y
+00999  0C92  8D 05 D0              STA SPRITE2_Y
+01000  0C95  60                    RTS
+01001  0C96             
+01002  0C96             UPDATEHORIDOORPOSITION 
+01003  0C96  AD 61 2A              LDA HORI_DOOR_X
+01004  0C99  8D 06 D0              STA SPRITE3_X
+01005  0C9C  AD 62 2A              LDA HORI_DOOR_Y
+01006  0C9F  8D 07 D0              STA SPRITE3_Y
+01007  0CA2  60                    RTS
+01008  0CA3             
+01009  0CA3             UPDATEBUTTONPOSITION 
+01010  0CA3  AD 69 2A              LDA BUTTON_X
+01011  0CA6  8D 08 D0              STA SPRITE4_X
+01012  0CA9  AD 6A 2A              LDA BUTTON_Y
+01013  0CAC  8D 09 D0              STA SPRITE4_Y
+01014  0CAF  60                    RTS
+01015  0CB0             
+01016  0CB0             UPDATEBUTTON2POSITION 
+01017  0CB0  AD 6F 2A              LDA BUTTON2_X
+01018  0CB3  8D 0A D0              STA SPRITE5_X
+01019  0CB6  AD 70 2A              LDA BUTTON2_Y
+01020  0CB9  8D 0B D0              STA SPRITE5_Y
+01021  0CBC  60                    RTS
+01022  0CBD             
+01023  0CBD             UPDATENPC1POSITION 
+01024  0CBD  AD 76 2A              LDA NPC1_X
+01025  0CC0  8D 0C D0              STA SPRITE6_X
+01026  0CC3  AD 77 2A              LDA NPC1_Y
+01027  0CC6  8D 0D D0              STA SPRITE6_Y
+01028  0CC9  60                    RTS
+01029  0CCA             
+01030  0CCA             UPDATENPC2POSITION 
+01031  0CCA  AD 78 2A              LDA NPC2_X
+01032  0CCD  8D 0E D0              STA SPRITE7_X
+01033  0CD0  AD 79 2A              LDA NPC2_Y
+01034  0CD3  8D 0F D0              STA SPRITE7_Y
+01035  0CD6  60                    RTS
+01036  0CD7             
+01037  0CD7             INITSPRITES 
+01038  0CD7             
+01039  0CD7             
+01040  0CD7  A9 FD                 LDA #%11111101
+01041  0CD9  8D 15 D0              STA SPRITE_ENABLED
+01042  0CDC                        
+01043  0CDC  AD 47 2A              LDA PLAYER_IDLE
+01044  0CDF  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01045  0CE2  8D 74 2A              STA NPC1_SPRITE_INDEX
+01046  0CE5  8D 75 2A              STA NPC2_SPRITE_INDEX
+01047  0CE8  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01048  0CEB  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01049  0CEE  AD 5B 2A              LDA DOOR_FRAME1
+01050  0CF1  8D 58 2A              STA DOOR_SPRITE_INDEX
+01051  0CF4  AD 63 2A              LDA HORI_DOOR_FRAME1
+01052  0CF7  8D 60 2A              STA HORI_DOOR_SPRITE_INDEX
+01053  0CFA                        
+01054  0CFA  AD 6B 2A              LDA BUTTON_FRAME1
+01055  0CFD  8D 68 2A              STA BUTTON_SPRITE_INDEX
+01056  0D00  8D 6E 2A              STA BUTTON2_SPRITE_INDEX
+01057  0D03             
+01058  0D03             
+01059  0D03  AD 44 2A              LDA PLAYER_SPRITE_INDEX
+01060  0D06  8D F8 07              STA SPRITE0_POINTER
+01061  0D09             
+01062  0D09             
+01063  0D09  AD 4C 2A              LDA PLAYER_BULLET_SPRITE_INDEX
+01064  0D0C  8D F9 07              STA SPRITE1_POINTER
+01065  0D0F             
+01066  0D0F             
+01067  0D0F  AD 58 2A              LDA DOOR_SPRITE_INDEX
+01068  0D12  8D FA 07              STA SPRITE2_POINTER
+01069  0D15             
+01070  0D15             
+01071  0D15  AD 60 2A              LDA HORI_DOOR_SPRITE_INDEX
+01072  0D18  8D FB 07              STA SPRITE3_POINTER
+01073  0D1B             
+01074  0D1B             
+01075  0D1B  AD 68 2A              LDA BUTTON_SPRITE_INDEX
+01076  0D1E  8D FC 07              STA SPRITE4_POINTER
+01077  0D21             
+01078  0D21             
+01079  0D21  AD 6E 2A              LDA BUTTON2_SPRITE_INDEX
+01080  0D24  8D FD 07              STA SPRITE5_POINTER
+01081  0D27             
+01082  0D27             
+01083  0D27  AD 74 2A              LDA NPC1_SPRITE_INDEX
+01084  0D2A  8D FE 07              STA SPRITE6_POINTER
+01085  0D2D             
+01086  0D2D             
+01087  0D2D  AD 75 2A              LDA NPC2_SPRITE_INDEX
+01088  0D30  8D FF 07              STA SPRITE7_POINTER
+01089  0D33  AD 10 D0              LDA SPRITE_OVERFLOW
+01090  0D36  09 A8                 ORA #%10101000
+01091  0D38  8D 10 D0              STA SPRITE_OVERFLOW
+01092  0D3B  A9 0E                 LDA COLOUR_LIGHT_BLUE
+01093  0D3D  8D 27 D0              STA SPRITE0_COLOUR
+01094  0D40  A9 02                 LDA COLOUR_RED
+01095  0D42  8D 28 D0              STA SPRITE1_COLOUR
+01096  0D45  A2 4A                 LDX #$4A
+01097  0D47  8E 45 2A              STX PLAYER_X
+01098  0D4A  8E 4D 2A              STX PLAYER_BULLET_X
+01099  0D4D  A0 5E                 LDY #$5E
+01100  0D4F  8C 46 2A              STY PLAYER_Y
+01101  0D52  8E 4E 2A              STX PLAYER_BULLET_Y
+01102  0D55  20 6F 0C              JSR UPDATEPLAYERSPRITEPOSITION
+01103  0D58  20 7C 0C              JSR UPDATEPLAYERBULLETPOSITION
+01104  0D5B  20 96 0C              JSR UPDATEHORIDOORPOSITION
+01105  0D5E  20 89 0C              JSR UPDATEDOORPOSITION
+01106  0D61  20 A3 0C              JSR UPDATEBUTTONPOSITION
+01107  0D64  20 B0 0C              JSR UPDATEBUTTON2POSITION
+01108  0D67  20 BD 0C              JSR UPDATENPC1POSITION
+01109  0D6A  20 CA 0C              JSR UPDATENPC2POSITION
+01110  0D6D  60                    RTS
+01111  0D6E             
+01112  0D6E             UPDATEPLAYERSPRITE 
+01113  0D6E             
+01114  0D6E             
+01115  0D6E  AD 44 2A              LDA PLAYER_SPRITE_INDEX
+01116  0D71  8D F8 07              STA SPRITE0_POINTER
+01117  0D74  60                    RTS
+01118  0D75             
+01119  0D75             UPDATEPLAYERBULLETSPRITE 
+01120  0D75             
+01121  0D75             
+01122  0D75  AD 4C 2A              LDA PLAYER_BULLET_SPRITE_INDEX
+01123  0D78  8D F9 07              STA SPRITE1_POINTER
+01124  0D7B  60                    RTS
+01125  0D7C             
+01126  0D7C             UPDATEDOORSPRITE 
+01127  0D7C             
+01128  0D7C             
+01129  0D7C  AD 58 2A              LDA DOOR_SPRITE_INDEX
+01130  0D7F  8D FA 07              STA SPRITE2_POINTER
+01131  0D82  60                    RTS
+01132  0D83             
+01133  0D83             UPDATEHORIDOORSPRITE 
+01134  0D83             
+01135  0D83             
+01136  0D83  AD 60 2A              LDA HORI_DOOR_SPRITE_INDEX
+01137  0D86  8D FB 07              STA SPRITE3_POINTER
+01138  0D89  60                    RTS
+01139  0D8A             
+01140  0D8A             UPDATEBUTTONSPRITE 
+01141  0D8A             
+01142  0D8A             
+01143  0D8A  AD 68 2A              LDA BUTTON_SPRITE_INDEX
+01144  0D8D  8D FC 07              STA SPRITE4_POINTER
+01145  0D90  60                    RTS
+01146  0D91             
+01147  0D91             UPDATEBUTTON2SPRITE 
+01148  0D91             
+01149  0D91             
+01150  0D91  AD 6E 2A              LDA BUTTON2_SPRITE_INDEX
+01151  0D94  8D FD 07              STA SPRITE5_POINTER
+01152  0D97  60                    RTS
+01153  0D98             
+01154  0D98             INITCHARACTERSET 
+01155  0D98  AD 18 D0              LDA CHARSET_LOOKUP
+01156  0D9B  09 0E                 ORA #$0E
+01157  0D9D  8D 18 D0              STA CHARSET_LOOKUP
+01158  0DA0  AD 16 D0              LDA SCREEN_CONTROL
+01159  0DA3  09 10                 ORA #%00010000
+01160  0DA5  8D 16 D0              STA SCREEN_CONTROL
+01161  0DA8  A9 0E                 LDA COLOUR_LIGHT_BLUE
+01162  0DAA  8D 22 D0              STA BG_COLOUR1
+01163  0DAD  A9 01                 LDA COLOUR_WHITE
+01164  0DAF  8D 23 D0              STA BG_COLOUR2
+01165  0DB2  A9 02                 LDA COLOUR_RED
+01166  0DB4  8D 24 D0              STA BG_COLOUR3
+01167  0DB7  60                    RTS
+01168  0DB8             
+01169  0DB8             DRAWLEVEL
+01170  0DB8             
+01171  0DB8             
+01172  0DB8  A2 00                 LDX #0
+01173  0DBA             @BLOCK1
+01174  0DBA  BD 00 50              LDA LEVEL1_BLOCK1,X
+01175  0DBD  A8                    TAY
+01176  0DBE  9D 00 04              STA SCREEN_BLOCK1,X
+01177  0DC1  E8                    INX
+01178  0DC2  E0 FF                 CPX #255
+01179  0DC4  D0 F4                 BNE @BLOCK1
+01180  0DC6  A2 00                 LDX #0
+01181  0DC8             @BLOCK2
+01182  0DC8  BD FF 50              LDA LEVEL1_BLOCK2,X
+01183  0DCB  A8                    TAY
+01184  0DCC  9D FF 04              STA SCREEN_BLOCK2,X
+01185  0DCF  E8                    INX
+01186  0DD0  E0 FF                 CPX #255
+01187  0DD2  D0 F4                 BNE @BLOCK2
+01188  0DD4  A2 00                 LDX #0
+01189  0DD6             @BLOCK3
+01190  0DD6  BD FE 51              LDA LEVEL1_BLOCK3,X
+01191  0DD9  A8                    TAY
+01192  0DDA  9D FE 05              STA SCREEN_BLOCK3,X
+01193  0DDD  E8                    INX
+01194  0DDE  E0 FF                 CPX #255
+01195  0DE0  D0 F4                 BNE @BLOCK3
+01196  0DE2  A2 00                 LDX #0
+01197  0DE4             @BLOCK4
+01198  0DE4  BD FD 52              LDA LEVEL1_BLOCK4,X
+01199  0DE7  A8                    TAY
+01200  0DE8  9D FD 06              STA SCREEN_BLOCK4,X
+01201  0DEB  E8                    INX
+01202  0DEC  E0 FF                 CPX #255
+01203  0DEE  D0 F4                 BNE @BLOCK4
+01204  0DF0  A2 00                 LDX #0
+01205  0DF2  60                    RTS
+01206  0DF3  60                    RTS
+01207  0DF4             
+01208  0DF4             DRAWTITLE
+01209  0DF4             
+01210  0DF4             
+01211  0DF4  A2 00                 LDX #0
+01212  0DF6             @BLOCK1
+01213  0DF6  BD 00 54              LDA TITLE_BLOCK1,X
+01214  0DF9  A8                    TAY
+01215  0DFA  9D 00 04              STA SCREEN_BLOCK1,X
+01216  0DFD  E8                    INX
+01217  0DFE  E0 FF                 CPX #255
+01218  0E00  D0 F4                 BNE @BLOCK1
+01219  0E02  A2 00                 LDX #0
+01220  0E04             @BLOCK2
+01221  0E04  BD FF 54              LDA TITLE_BLOCK2,X
+01222  0E07  A8                    TAY
+01223  0E08  9D FF 04              STA SCREEN_BLOCK2,X
+01224  0E0B  E8                    INX
+01225  0E0C  E0 FF                 CPX #255
+01226  0E0E  D0 F4                 BNE @BLOCK2
+01227  0E10  A2 00                 LDX #0
+01228  0E12             @BLOCK3
+01229  0E12  BD FE 55              LDA TITLE_BLOCK3,X
+01230  0E15  A8                    TAY
+01231  0E16  9D FE 05              STA SCREEN_BLOCK3,X
+01232  0E19  E8                    INX
+01233  0E1A  E0 FF                 CPX #255
+01234  0E1C  D0 F4                 BNE @BLOCK3
+01235  0E1E  A2 00                 LDX #0
+01236  0E20             @BLOCK4
+01237  0E20  BD FD 56              LDA TITLE_BLOCK4,X
+01238  0E23  A8                    TAY
+01239  0E24  9D FD 06              STA SCREEN_BLOCK4,X
+01240  0E27  E8                    INX
+01241  0E28  E0 FF                 CPX #255
+01242  0E2A  D0 F4                 BNE @BLOCK4
+01243  0E2C  A2 00                 LDX #0
+01244  0E2E  60                    RTS
+01245  0E2F  60                    RTS
+01246  0E30             
+01247  0E30             CHECKFORWALLCOLLISION 
+01248  0E30  AD 1F D0              LDA SPRITE_BG_COLLISION
+01249  0E33  A8                    TAY
+01250  0E34  29 02                 AND #%00000010
+01251  0E36  D0 7D                 BNE DESTROYBULLET
+01252  0E38  98                    TYA
+01253  0E39  29 01                 AND #%00000001
+01254  0E3B  D0 61                 BNE KILLPLAYER
+01255  0E3D             @CONTINUE
+01256  0E3D  60                    RTS
+01257  0E3E             
+01258  0E3E             CHECKFORSPRITECOLLISION 
+01259  0E3E  AD 1E D0              LDA SPRITE_COLLISIONS
+01260  0E41  C9 05                 CMP #%00000101 ; PLAYER AND DOOR 1
+01261  0E43  F0 59                 BEQ KILLPLAYER
+01262  0E45  C9 06                 CMP #%00000110 ; DOOR1 AND BULLET
+01263  0E47  F0 6C                 BEQ DESTROYBULLET
+01264  0E49  C9 09                 CMP #%00001001 ; DOOR 2 AND PLAYER
+01265  0E4B  F0 51                 BEQ KILLPLAYER
+01266  0E4D  C9 0A                 CMP #%00001010 ; DOOR 2 AND BULLET
+01267  0E4F  F0 64                 BEQ DESTROYBULLET
+01268  0E51  C9 12                 CMP #%00010010 ; BULLET AND BUTTON 1
+01269  0E53  F0 25                 BEQ OPENDOOR1
+01270  0E55  C9 22                 CMP #%00100010
+01271  0E57  F0 33                 BEQ OPENDOOR2
+01272  0E59  C9 42                 CMP #%01000010
+01273  0E5B  F0 05                 BEQ KILLNPC1
+01274  0E5D  C9 82                 CMP #%10000010
+01275  0E5F  F0 0D                 BEQ KILLNPC2
+01276  0E61  60                    RTS
+01277  0E62             KILLNPC1
+01278  0E62  20 B5 0E              JSR DESTROYBULLET
+01279  0E65             
+01280  0E65             
+01281  0E65  AD 15 D0              LDA SPRITE_ENABLED
+01282  0E68  29 BF                 AND #%10111111
+01283  0E6A  8D 15 D0              STA SPRITE_ENABLED
+01284  0E6D  60                    RTS
+01285  0E6E             KILLNPC2
+01286  0E6E  20 B5 0E              JSR DESTROYBULLET
+01287  0E71             
+01288  0E71             
+01289  0E71  AD 15 D0              LDA SPRITE_ENABLED
+01290  0E74  29 7F                 AND #%01111111
+01291  0E76  8D 15 D0              STA SPRITE_ENABLED
+01292  0E79  60                    RTS
+01293  0E7A             OPENDOOR1
+01294  0E7A  20 B5 0E              JSR DESTROYBULLET
+01295  0E7D  AD 6D 2A              LDA BUTTON_FRAME3
+01296  0E80  8D 68 2A              STA BUTTON_SPRITE_INDEX
+01297  0E83  20 8A 0D              JSR UPDATEBUTTONSPRITE
+01298  0E86  A9 01                 LDA #1
+01299  0E88  8D 07 70              STA DOOR1_OPEN_COUNTER
+01300  0E8B  60                    RTS
+01301  0E8C             
+01302  0E8C             OPENDOOR2
+01303  0E8C  20 B5 0E              JSR DESTROYBULLET
+01304  0E8F  AD 6D 2A              LDA BUTTON_FRAME3
+01305  0E92  8D 6E 2A              STA BUTTON2_SPRITE_INDEX
+01306  0E95  20 91 0D              JSR UPDATEBUTTON2SPRITE
+01307  0E98  A9 01                 LDA #1
+01308  0E9A  8D 08 70              STA DOOR2_OPEN_COUNTER
+01309  0E9D  60                    RTS
+01310  0E9E             
+01311  0E9E             KILLPLAYER 
+01312  0E9E  AE 00 70              LDX PLAYER_DYING_COUNTER
+01313  0EA1  E8                    INX
+01314  0EA2  8E 00 70              STX PLAYER_DYING_COUNTER
+01315  0EA5  A9 89                 LDA PLAYER_DYING_ANIM1
+01316  0EA7  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01317  0EAA  AE 01 70              LDX PLAYER_LIVES
+01318  0EAD  CA                    DEX
+01319  0EAE  8E 01 70              STX PLAYER_LIVES
+01320  0EB1  20 B5 0E              JSR DESTROYBULLET
+01321  0EB4  60                    RTS
+01322  0EB5             
+01323  0EB5             DESTROYBULLET 
+01324  0EB5                        ;DISABLESPRITE #%11111101
+01325  0EB5  AD 06 70              LDA PLAYER_BULLET_EXPLOSION_COUNTER
+01326  0EB8  C9 00                 CMP #0
+01327  0EBA  D0 05                 BNE @CONT
+01328  0EBC  A9 01                 LDA #1
+01329  0EBE  8D 06 70              STA PLAYER_BULLET_EXPLOSION_COUNTER
+01330  0EC1             @CONT
+01331  0EC1  60                    RTS
+01332  0EC2             
+01333  0EC2             INITPLAYERSTATE 
+01334  0EC2  A2 09                 LDX #9
+01335  0EC4  8E 01 70              STX PLAYER_LIVES
+01336  0EC7  A2 01                 LDX PLAYER_ACTION_SHOOT
+01337  0EC9  8E 03 70              STX PLAYER_CURRENT_ACTION
+01338  0ECC  A2 00                 LDX #0
+01339  0ECE  8E 04 70              STX PLAYER_ACTION_SWITCH_COOLDOWN
+01340  0ED1  60                    RTS
+01341  0ED2             
+01342  0ED2             
+01343  0ED2             PLAYFOOTSTEP 
+01344  0ED2             
+01345  0ED2             
+01346  0ED2  A9 04                 LDA #4
+01347  0ED4  8D 18 D4              STA SID_VOLUME
+01348  0ED7  A9 00                 LDA #0
+01349  0ED9  8D 00 D4              STA SID_VOICE1_LO_FREQ
+01350  0EDC  A9 80                 LDA #128
+01351  0EDE  8D 01 D4              STA SID_VOICE1_HI_FREQ
+01352  0EE1  A9 80                 LDA #128
+01353  0EE3  8D 05 D4              STA SID_ATTACK_DECAY
+01354  0EE6  A9 01                 LDA #1
+01355  0EE8  8D 06 D4              STA SID_SUSTAIN
+01356  0EEB  A9 00                 LDA #0
+01357  0EED  8D 04 D4              STA SID_VOICE1_CONTROL
+01358  0EF0  A9 41                 LDA #65
+01359  0EF2  8D 04 D4              STA SID_VOICE1_CONTROL
+01360  0EF5  60                    RTS
+01361  0EF6             
+01362  0EF6             PLAYZAP
+01363  0EF6             
+01364  0EF6             
+01365  0EF6  A9 19                 LDA #25
+01366  0EF8  8D 18 D4              STA SID_VOLUME
+01367  0EFB  A9 00                 LDA #0
+01368  0EFD  8D 00 D4              STA SID_VOICE1_LO_FREQ
+01369  0F00  A9 28                 LDA #40
+01370  0F02  8D 01 D4              STA SID_VOICE1_HI_FREQ
+01371  0F05  A9 16                 LDA #22
+01372  0F07  8D 05 D4              STA SID_ATTACK_DECAY
+01373  0F0A  A9 07                 LDA #7
+01374  0F0C  8D 06 D4              STA SID_SUSTAIN
+01375  0F0F  A9 00                 LDA #0
+01376  0F11  8D 04 D4              STA SID_VOICE1_CONTROL
+01377  0F14  A9 81                 LDA #129
+01378  0F16  8D 04 D4              STA SID_VOICE1_CONTROL
+01379  0F19  60                    RTS
+01380  0F1A             
+01381  0F1A             PLAYLASER
+01382  0F1A             
+01383  0F1A             
+01384  0F1A  A9 19                 LDA #25
+01385  0F1C  8D 18 D4              STA SID_VOLUME
+01386  0F1F  A9 14                 LDA #20
+01387  0F21  8D 00 D4              STA SID_VOICE1_LO_FREQ
+01388  0F24  A9 2C                 LDA #44
+01389  0F26  8D 01 D4              STA SID_VOICE1_HI_FREQ
+01390  0F29  A9 58                 LDA #88
+01391  0F2B  8D 05 D4              STA SID_ATTACK_DECAY
+01392  0F2E  A9 03                 LDA #3
+01393  0F30  8D 06 D4              STA SID_SUSTAIN
+01394  0F33  A9 00                 LDA #0
+01395  0F35  8D 04 D4              STA SID_VOICE1_CONTROL
+01396  0F38  A9 21                 LDA #33
+01397  0F3A  8D 04 D4              STA SID_VOICE1_CONTROL
+01398  0F3D  60                    RTS
+01399  0F3E             
+01400  0F3E             
+01401  0F3E             UPDATELASTAIMDIR 
+01402  0F3E  AD 44 2A              LDA PLAYER_SPRITE_INDEX
+01403  0F41  C9 8B                 CMP PLAYER_SHOOT_N
+01404  0F43  F0 1D                 BEQ @SETAIMDIR
+01405  0F45  C9 8D                 CMP PLAYER_SHOOT_E
+01406  0F47  F0 19                 BEQ @SETAIMDIR
+01407  0F49  C9 8F                 CMP PLAYER_SHOOT_S
+01408  0F4B  F0 15                 BEQ @SETAIMDIR
+01409  0F4D  C9 91                 CMP PLAYER_SHOOT_W
+01410  0F4F  F0 11                 BEQ @SETAIMDIR
+01411  0F51  C9 8C                 CMP PLAYER_SHOOT_NE
+01412  0F53  F0 0D                 BEQ @SETAIMDIR
+01413  0F55  C9 92                 CMP PLAYER_SHOOT_NW
+01414  0F57  F0 09                 BEQ @SETAIMDIR
+01415  0F59  C9 8E                 CMP PLAYER_SHOOT_SE
+01416  0F5B  F0 05                 BEQ @SETAIMDIR
+01417  0F5D  C9 90                 CMP PLAYER_SHOOT_SW
+01418  0F5F  F0 01                 BEQ @SETAIMDIR
+01419  0F61  60                    RTS
+01420  0F62             @SETAIMDIR 
+01421  0F62  AD 44 2A              LDA PLAYER_SPRITE_INDEX
+01422  0F65  8D 05 70              STA PLAYER_BULLET_DIRECTION
+01423  0F68  60                    RTS
+01424  0F69             
+01425  0F69             HANDLEACTION 
+01426  0F69  20 70 0F              JSR @PROCESS
+01427  0F6C  20 3E 0F              JSR UPDATELASTAIMDIR
+01428  0F6F  60                    RTS
+01429  0F70             @PROCESS
+01430  0F70                        ;JSR CHECKFORSELECTEDACTIONCHANGE
+01431  0F70  20 EF 10              JSR CHECKFORACTION
+01432  0F73  20 D6 0A              JSR READJOYSTICK1
+01433  0F76  A5 02                 LDA JOYSTICK_INPUT1
+01434  0F78  29 02                 AND PLAYER_MOVED_UP
+01435  0F7A  D0 13                 BNE @SHOOTUP
+01436  0F7C  A5 02                 LDA JOYSTICK_INPUT1
+01437  0F7E  29 08                 AND PLAYER_MOVED_DOWN
+01438  0F80  D0 3D                 BNE @SHOOTDOWN
+01439  0F82  A5 02                 LDA JOYSTICK_INPUT1
+01440  0F84  29 10                 AND PLAYER_MOVED_LEFT
+01441  0F86  D0 67                 BNE @SHOOTLEFT
+01442  0F88  A5 02                 LDA JOYSTICK_INPUT1
+01443  0F8A  29 04                 AND PLAYER_MOVED_RIGHT
+01444  0F8C  D0 6D                 BNE @SHOOTRIGHT
+01445  0F8E  60                    RTS
+01446  0F8F             @SHOOTUP
+01447  0F8F  A5 02                 LDA JOYSTICK_INPUT1
+01448  0F91  29 04                 AND PLAYER_MOVED_RIGHT
+01449  0F93  D0 12                 BNE @SHOOTUPRIGHT
+01450  0F95  A5 02                 LDA JOYSTICK_INPUT1
+01451  0F97  29 10                 AND PLAYER_MOVED_LEFT
+01452  0F99  D0 18                 BNE @SHOOTUPLEFT
+01453  0F9B  A9 8B                 LDA PLAYER_SHOOT_N
+01454  0F9D  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01455  0FA0  AD 50 2A              LDA PLAYER_BULLET_VERT
+01456  0FA3  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01457  0FA6  60                    RTS
+01458  0FA7             @SHOOTUPRIGHT 
+01459  0FA7  A9 8C                 LDA PLAYER_SHOOT_NE
+01460  0FA9  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01461  0FAC  AD 52 2A              LDA PLAYER_BULLET_SWNE
+01462  0FAF  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01463  0FB2  60                    RTS
+01464  0FB3             @SHOOTUPLEFT 
+01465  0FB3  A9 92                 LDA PLAYER_SHOOT_NW
+01466  0FB5  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01467  0FB8  AD 51 2A              LDA PLAYER_BULLET_NWSE
+01468  0FBB  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01469  0FBE  60                    RTS
+01470  0FBF             @SHOOTDOWN 
+01471  0FBF  A5 02                 LDA JOYSTICK_INPUT1
+01472  0FC1  29 04                 AND PLAYER_MOVED_RIGHT
+01473  0FC3  D0 12                 BNE @SHOOTDOWNRIGHT
+01474  0FC5  A5 02                 LDA JOYSTICK_INPUT1
+01475  0FC7  29 10                 AND PLAYER_MOVED_LEFT
+01476  0FC9  D0 18                 BNE @SHOOTDOWNLEFT
+01477  0FCB  A9 8F                 LDA PLAYER_SHOOT_S
+01478  0FCD  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01479  0FD0  AD 50 2A              LDA PLAYER_BULLET_VERT
+01480  0FD3  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01481  0FD6  60                    RTS
+01482  0FD7             @SHOOTDOWNRIGHT 
+01483  0FD7  A9 8E                 LDA PLAYER_SHOOT_SE
+01484  0FD9  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01485  0FDC  AD 51 2A              LDA PLAYER_BULLET_NWSE
+01486  0FDF  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01487  0FE2  60                    RTS
+01488  0FE3             @SHOOTDOWNLEFT 
+01489  0FE3  A9 90                 LDA PLAYER_SHOOT_SW
+01490  0FE5  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01491  0FE8  AD 52 2A              LDA PLAYER_BULLET_SWNE
+01492  0FEB  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01493  0FEE  60                    RTS
+01494  0FEF             @SHOOTLEFT 
+01495  0FEF  A9 91                 LDA PLAYER_SHOOT_W
+01496  0FF1  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01497  0FF4  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01498  0FF7  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01499  0FFA  60                    RTS
+01500  0FFB             @SHOOTRIGHT 
+01501  0FFB  A9 8D                 LDA PLAYER_SHOOT_E
+01502  0FFD  8D 44 2A              STA PLAYER_SPRITE_INDEX
+01503  1000  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01504  1003  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01505  1006  60                    RTS
+01506  1007             CHECKFORSELECTEDACTIONCHANGE 
+01507  1007  A5 02                 LDA JOYSTICK_INPUT1
+01508  1009  29 01                 AND PLAYER_ACTION
+01509  100B  D0 01                 BNE @UPDATEACTION
+01510  100D  60                    RTS
+01511  100E             @UPDATEACTION 
+01512  100E  AE 04 70              LDX PLAYER_ACTION_SWITCH_COOLDOWN
+01513  1011  E8                    INX
+01514  1012  8E 04 70              STX PLAYER_ACTION_SWITCH_COOLDOWN
+01515  1015  E0 01                 CPX #1
+01516  1017  F0 39                 BEQ @PROCESSACTIONUPDATE
+01517  1019  E0 10                 CPX #16
+01518  101B  F0 35                 BEQ @PROCESSACTIONUPDATE
+01519  101D  E0 20                 CPX #32
+01520  101F  F0 31                 BEQ @PROCESSACTIONUPDATE
+01521  1021  E0 30                 CPX #48
+01522  1023  F0 2D                 BEQ @PROCESSACTIONUPDATE
+01523  1025  E0 40                 CPX #64
+01524  1027  F0 29                 BEQ @PROCESSACTIONUPDATE
+01525  1029  E0 50                 CPX #80
+01526  102B  F0 25                 BEQ @PROCESSACTIONUPDATE
+01527  102D  E0 60                 CPX #96
+01528  102F  F0 21                 BEQ @PROCESSACTIONUPDATE
+01529  1031  E0 6E                 CPX #110
+01530  1033  F0 1D                 BEQ @PROCESSACTIONUPDATE
+01531  1035  E0 80                 CPX #128
+01532  1037  F0 19                 BEQ @PROCESSACTIONUPDATE
+01533  1039  E0 8E                 CPX #142
+01534  103B  F0 15                 BEQ @PROCESSACTIONUPDATE
+01535  103D  E0 A0                 CPX #160
+01536  103F  F0 11                 BEQ @PROCESSACTIONUPDATE
+01537  1041  E0 B0                 CPX #176
+01538  1043  F0 0D                 BEQ @PROCESSACTIONUPDATE
+01539  1045  E0 C6                 CPX #198
+01540  1047  F0 09                 BEQ @PROCESSACTIONUPDATE
+01541  1049  E0 D6                 CPX #214
+01542  104B  F0 05                 BEQ @PROCESSACTIONUPDATE
+01543  104D  E0 E6                 CPX #230
+01544  104F  F0 01                 BEQ @PROCESSACTIONUPDATE
+01545  1051  60                    RTS
+01546  1052             @PROCESSACTIONUPDATE 
+01547  1052  20 C8 10              JSR RESETACTIONSELECTOR
+01548  1055  AD 03 70              LDA PLAYER_CURRENT_ACTION
+01549  1058  C9 01                 CMP PLAYER_ACTION_SHOOT
+01550  105A  F0 2A                 BEQ SETACTIONTALK
+01551  105C  C9 02                 CMP PLAYER_ACTION_TALK
+01552  105E  F0 47                 BEQ SETACTIONUSE
+01553  1060  C9 04                 CMP PLAYER_ACTION_USE
+01554  1062  F0 01                 BEQ SETACTIONSHOOT
+01555  1064  60                    RTS
+01556  1065             SETACTIONSHOOT 
+01557  1065  A2 01                 LDX PLAYER_ACTION_SHOOT
+01558  1067  8E 03 70              STX PLAYER_CURRENT_ACTION
+01559  106A  20 C8 10              JSR RESETACTIONSELECTOR
+01560  106D  AE 40 2A              LDX BOX_SELECTOR_TL
+01561  1070  8E 95 07              STX ACTION_SELECTOR_POS1
+01562  1073  AE 41 2A              LDX BOX_SELECTOR_TR
+01563  1076  8E 97 07              STX ACTION_SELECTOR_POS2
+01564  1079  AE 42 2A              LDX BOX_SELECTOR_BL
+01565  107C  8E E5 07              STX ACTION_SELECTOR_POS3
+01566  107F  AE 43 2A              LDX BOX_SELECTOR_BR
+01567  1082  8E E7 07              STX ACTION_SELECTOR_POS4
+01568  1085  60                    RTS
+01569  1086             SETACTIONTALK 
+01570  1086  A2 02                 LDX PLAYER_ACTION_TALK
+01571  1088  8E 03 70              STX PLAYER_CURRENT_ACTION
+01572  108B  20 C8 10              JSR RESETACTIONSELECTOR
+01573  108E  AE 40 2A              LDX BOX_SELECTOR_TL
+01574  1091  8E 45 07              STX ACTION_SELECTOR_POS5
+01575  1094  AE 41 2A              LDX BOX_SELECTOR_TR
+01576  1097  8E 47 07              STX ACTION_SELECTOR_POS6
+01577  109A  AE 42 2A              LDX BOX_SELECTOR_BL
+01578  109D  8E 95 07              STX ACTION_SELECTOR_POS7
+01579  10A0  AE 43 2A              LDX BOX_SELECTOR_BR
+01580  10A3  8E 97 07              STX ACTION_SELECTOR_POS8
+01581  10A6  60                    RTS
+01582  10A7             SETACTIONUSE 
+01583  10A7  A2 04                 LDX PLAYER_ACTION_USE
+01584  10A9  8E 03 70              STX PLAYER_CURRENT_ACTION
+01585  10AC  20 C8 10              JSR RESETACTIONSELECTOR
+01586  10AF  AE 40 2A              LDX BOX_SELECTOR_TL
+01587  10B2  8E F5 06              STX ACTION_SELECTOR_POS9
+01588  10B5  AE 41 2A              LDX BOX_SELECTOR_TR
+01589  10B8  8E F7 06              STX ACTION_SELECTOR_POS10
+01590  10BB  AE 42 2A              LDX BOX_SELECTOR_BL
+01591  10BE  8E 45 07              STX ACTION_SELECTOR_POS11
+01592  10C1  AE 43 2A              LDX BOX_SELECTOR_BR
+01593  10C4  8E 47 07              STX ACTION_SELECTOR_POS12
+01594  10C7  60                    RTS
+01595  10C8             RESETACTIONSELECTOR 
+01596  10C8  A2 20                 LDX #32
+01597  10CA  8E 95 07              STX ACTION_SELECTOR_POS1
+01598  10CD  8E 97 07              STX ACTION_SELECTOR_POS2
+01599  10D0  8E E5 07              STX ACTION_SELECTOR_POS3
+01600  10D3  8E E7 07              STX ACTION_SELECTOR_POS4
+01601  10D6  8E 45 07              STX ACTION_SELECTOR_POS5
+01602  10D9  8E 47 07              STX ACTION_SELECTOR_POS6
+01603  10DC  8E 95 07              STX ACTION_SELECTOR_POS7
+01604  10DF  8E 97 07              STX ACTION_SELECTOR_POS8
+01605  10E2  8E F5 06              STX ACTION_SELECTOR_POS9
+01606  10E5  8E F7 06              STX ACTION_SELECTOR_POS10
+01607  10E8  8E 45 07              STX ACTION_SELECTOR_POS11
+01608  10EB  8E 47 07              STX ACTION_SELECTOR_POS12
+01609  10EE  60                    RTS
+01610  10EF             CHECKFORACTION 
+01611  10EF  20 28 13              JSR TOGGLETILES
+01612  10F2  AD 15 D0              LDA SPRITE_ENABLED
+01613  10F5  29 02                 AND #%00000010
+01614  10F7  F0 04                 BEQ @ACTIONCANPROCEED
+01615  10F9  20 42 11              JSR @MOVEBULLET
+01616  10FC                        
+01617  10FC  60                    RTS
+01618  10FD             @ACTIONCANPROCEED 
+01619  10FD  20 77 0A              JSR READJOYSTICK
+01620  1100  A5 02                 LDA JOYSTICK_INPUT
+01621  1102  29 01                 AND PLAYER_ACTION
+01622  1104  F0 04                 BEQ @ACTCONT
+01623  1106  20 0B 11              JSR @SHOOT
+01624  1109  60                    RTS
+01625  110A             @ACTCONT
+01626  110A  60                    RTS
+01627  110B             @SHOOT
+01628  110B  20 1A 0F              JSR PLAYLASER
+01629  110E  AE 45 2A              LDX PLAYER_X
+01630  1111  8E 4D 2A              STX PLAYER_BULLET_X
+01631  1114  AC 46 2A              LDY PLAYER_Y
+01632  1117  8C 4E 2A              STY PLAYER_BULLET_Y
+01633  111A             
+01634  111A             
+01635  111A  AD 15 D0              LDA SPRITE_ENABLED
+01636  111D  09 02                 ORA #%00000010
+01637  111F  8D 15 D0              STA SPRITE_ENABLED
+01638  1122  20 7C 0C              JSR UPDATEPLAYERBULLETPOSITION
+01639  1125  AD 10 D0              LDA SPRITE_OVERFLOW
+01640  1128  29 01                 AND #%00000001
+01641  112A  D0 04                 BNE @SETBULLETXOVERFLOWON
+01642  112C  20 39 11              JSR @SETBULLETXOVERFLOWOFF
+01643  112F                        ;JSR UPDATEPLAYERBULLETSPRITE
+01644  112F  60                    RTS
+01645  1130             @SETBULLETXOVERFLOWON 
+01646  1130  AD 10 D0              LDA SPRITE_OVERFLOW
+01647  1133  09 02                 ORA #%00000010
+01648  1135  8D 10 D0              STA SPRITE_OVERFLOW
+01649  1138  60                    RTS
+01650  1139             @SETBULLETXOVERFLOWOFF 
+01651  1139  AD 10 D0              LDA SPRITE_OVERFLOW
+01652  113C  29 FD                 AND #%11111101
+01653  113E  8D 10 D0              STA SPRITE_OVERFLOW
+01654  1141  60                    RTS
+01655  1142             @MOVEBULLET 
+01656  1142  AD 4D 2A              LDA PLAYER_BULLET_X
+01657  1145  C9 FF                 CMP #255
+01658  1147  F0 0B                 BEQ @CHECKFORBULLETOVERFLOW
+01659  1149  C9 00                 CMP #0
+01660  114B  F0 1D                 BEQ @CHECKFORBULLETOVERFLOWL
+01661  114D  20 9C 11              JSR @PROCESS
+01662  1150  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01663  1153  60                    RTS
+01664  1154             @CHECKFORBULLETOVERFLOW 
+01665  1154  AD 05 70              LDA PLAYER_BULLET_DIRECTION
+01666  1157  C9 8D                 CMP PLAYER_SHOOT_E
+01667  1159  F0 33                 BEQ @BULLETOVERFLOWRIGHT
+01668  115B  C9 8C                 CMP PLAYER_SHOOT_NE
+01669  115D  F0 2F                 BEQ @BULLETOVERFLOWRIGHT
+01670  115F  C9 8E                 CMP PLAYER_SHOOT_SE
+01671  1161  F0 2B                 BEQ @BULLETOVERFLOWRIGHT
+01672  1163  20 9C 11              JSR @PROCESS
+01673  1166  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01674  1169  60                    RTS
+01675  116A             @CHECKFORBULLETOVERFLOWL 
+01676  116A  AD 05 70              LDA PLAYER_BULLET_DIRECTION
+01677  116D  C9 91                 CMP PLAYER_SHOOT_W
+01678  116F  F0 0F                 BEQ @BULLETOVERFLOWLEFT
+01679  1171  C9 90                 CMP PLAYER_SHOOT_SW
+01680  1173  F0 0B                 BEQ @BULLETOVERFLOWLEFT
+01681  1175  C9 92                 CMP PLAYER_SHOOT_NW
+01682  1177  F0 07                 BEQ @BULLETOVERFLOWLEFT
+01683  1179  20 9C 11              JSR @PROCESS
+01684  117C  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01685  117F  60                    RTS
+01686  1180             @BULLETOVERFLOWLEFT 
+01687  1180  AD 10 D0              LDA SPRITE_OVERFLOW
+01688  1183  29 FD                 AND #%11111101
+01689  1185  8D 10 D0              STA SPRITE_OVERFLOW
+01690  1188  A9 FF                 LDA #255
+01691  118A  8D 4D 2A              STA PLAYER_BULLET_X
+01692  118D  60                    RTS
+01693  118E             @BULLETOVERFLOWRIGHT 
+01694  118E  AD 10 D0              LDA SPRITE_OVERFLOW
+01695  1191  09 02                 ORA #%00000010
+01696  1193  8D 10 D0              STA SPRITE_OVERFLOW
+01697  1196  A9 00                 LDA #0
+01698  1198  8D 4D 2A              STA PLAYER_BULLET_X
+01699  119B  60                    RTS
+01700  119C             @PROCESS
+01701  119C  AD 06 70              LDA PLAYER_BULLET_EXPLOSION_COUNTER
+01702  119F  C9 00                 CMP #0
+01703  11A1  F0 01                 BEQ @CONTINUEPROCESSING
+01704  11A3  60                    RTS
+01705  11A4             @CONTINUEPROCESSING 
+01706  11A4  AD 05 70              LDA PLAYER_BULLET_DIRECTION
+01707  11A7  C9 8B                 CMP PLAYER_SHOOT_N
+01708  11A9  F0 1D                 BEQ @MOVEBULLETN
+01709  11AB  C9 8D                 CMP PLAYER_SHOOT_E
+01710  11AD  F0 27                 BEQ @MOVEBULLETE
+01711  11AF  C9 8F                 CMP PLAYER_SHOOT_S
+01712  11B1  F0 3F                 BEQ @MOVEBULLETS
+01713  11B3  C9 91                 CMP PLAYER_SHOOT_W
+01714  11B5  F0 2D                 BEQ @MOVEBULLETW
+01715  11B7  C9 8C                 CMP PLAYER_SHOOT_NE
+01716  11B9  F0 5A                 BEQ @MOVEBULLETNE
+01717  11BB  C9 92                 CMP PLAYER_SHOOT_NW
+01718  11BD  F0 41                 BEQ @MOVEBULLETNW
+01719  11BF  C9 8E                 CMP PLAYER_SHOOT_SE
+01720  11C1  F0 7C                 BEQ @MOVEBULLETSE
+01721  11C3  C9 90                 CMP PLAYER_SHOOT_SW
+01722  11C5  F0 63                 BEQ @MOVEBULLETSW
+01723  11C7  60                    RTS
+01724  11C8             @MOVEBULLETN 
+01725  11C8  AC 4E 2A              LDY PLAYER_BULLET_Y
+01726  11CB  88                    DEY
+01727  11CC  8C 4E 2A              STY PLAYER_BULLET_Y
+01728  11CF  AD 50 2A              LDA PLAYER_BULLET_VERT
+01729  11D2  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01730  11D5  60                    RTS
+01731  11D6             @MOVEBULLETE 
+01732  11D6  AC 4D 2A              LDY PLAYER_BULLET_X
+01733  11D9  C8                    INY
+01734  11DA  8C 4D 2A              STY PLAYER_BULLET_X
+01735  11DD  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01736  11E0  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01737  11E3  60                    RTS
+01738  11E4             @MOVEBULLETW 
+01739  11E4  AC 4D 2A              LDY PLAYER_BULLET_X
+01740  11E7  88                    DEY
+01741  11E8  8C 4D 2A              STY PLAYER_BULLET_X
+01742  11EB  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01743  11EE  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01744  11F1  60                    RTS
+01745  11F2             @MOVEBULLETS 
+01746  11F2  AC 4E 2A              LDY PLAYER_BULLET_Y
+01747  11F5  C8                    INY
+01748  11F6  8C 4E 2A              STY PLAYER_BULLET_Y
+01749  11F9  AD 50 2A              LDA PLAYER_BULLET_VERT
+01750  11FC  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01751  11FF  60                    RTS
+01752  1200             @MOVEBULLETNW 
+01753  1200  AE 4D 2A              LDX PLAYER_BULLET_X
+01754  1203  AC 4E 2A              LDY PLAYER_BULLET_Y
+01755  1206  CA                    DEX
+01756  1207  88                    DEY
+01757  1208  8E 4D 2A              STX PLAYER_BULLET_X
+01758  120B  8C 4E 2A              STY PLAYER_BULLET_Y
+01759  120E  AD 51 2A              LDA PLAYER_BULLET_NWSE
+01760  1211  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01761  1214  60                    RTS
+01762  1215             @MOVEBULLETNE 
+01763  1215  AE 4D 2A              LDX PLAYER_BULLET_X
+01764  1218  AC 4E 2A              LDY PLAYER_BULLET_Y
+01765  121B  E8                    INX
+01766  121C  88                    DEY
+01767  121D  8E 4D 2A              STX PLAYER_BULLET_X
+01768  1220  8C 4E 2A              STY PLAYER_BULLET_Y
+01769  1223  AD 52 2A              LDA PLAYER_BULLET_SWNE
+01770  1226  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01771  1229  60                    RTS
+01772  122A             @MOVEBULLETSW 
+01773  122A  AE 4D 2A              LDX PLAYER_BULLET_X
+01774  122D  AC 4E 2A              LDY PLAYER_BULLET_Y
+01775  1230  CA                    DEX
+01776  1231  C8                    INY
+01777  1232  8E 4D 2A              STX PLAYER_BULLET_X
+01778  1235  8C 4E 2A              STY PLAYER_BULLET_Y
+01779  1238  AD 52 2A              LDA PLAYER_BULLET_SWNE
+01780  123B  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01781  123E  60                    RTS
+01782  123F             @MOVEBULLETSE 
+01783  123F  AE 4D 2A              LDX PLAYER_BULLET_X
+01784  1242  AC 4E 2A              LDY PLAYER_BULLET_Y
+01785  1245  E8                    INX
+01786  1246  C8                    INY
+01787  1247  8E 4D 2A              STX PLAYER_BULLET_X
+01788  124A  8C 4E 2A              STY PLAYER_BULLET_Y
+01789  124D  AD 51 2A              LDA PLAYER_BULLET_NWSE
+01790  1250  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01791  1253  60                    RTS
+01792  1254             
+01793  1254             HANDLEBULLETEXPLOSION 
+01794  1254  AE 06 70              LDX PLAYER_BULLET_EXPLOSION_COUNTER
+01795  1257  E0 00                 CPX #0
+01796  1259  F0 6F                 BEQ @CONT
+01797  125B  A9 02                 LDA #%00000010
+01798  125D  8D 1C D0              STA SPRITE_MULTICOLOUR_ENABLE
+01799  1260  20 F6 0E              JSR PLAYZAP
+01800  1263  E8                    INX
+01801  1264  8E 06 70              STX PLAYER_BULLET_EXPLOSION_COUNTER
+01802  1267  E0 02                 CPX #2
+01803  1269  F0 15                 BEQ @FRAME1
+01804  126B  E0 06                 CPX #6
+01805  126D  F0 1B                 BEQ @FRAME2
+01806  126F  E0 0C                 CPX #12
+01807  1271  F0 21                 BEQ @FRAME3
+01808  1273  E0 12                 CPX #18
+01809  1275  F0 27                 BEQ @FRAME4
+01810  1277  E0 18                 CPX #24
+01811  1279  F0 2D                 BEQ @FRAME5
+01812  127B  E0 20                 CPX #32
+01813  127D  F0 33                 BEQ @DESTROY
+01814  127F  60                    RTS
+01815  1280             @FRAME1
+01816  1280  AD 53 2A              LDA PLAYER_BULLET_EXPLOSION1
+01817  1283  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01818  1286  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01819  1289  60                    RTS
+01820  128A             @FRAME2
+01821  128A  AD 54 2A              LDA PLAYER_BULLET_EXPLOSION2
+01822  128D  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01823  1290  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01824  1293  60                    RTS
+01825  1294             @FRAME3
+01826  1294  AD 55 2A              LDA PLAYER_BULLET_EXPLOSION3
+01827  1297  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01828  129A  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01829  129D  60                    RTS
+01830  129E             @FRAME4
+01831  129E  AD 56 2A              LDA PLAYER_BULLET_EXPLOSION4
+01832  12A1  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01833  12A4  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01834  12A7  60                    RTS
+01835  12A8             @FRAME5
+01836  12A8  AD 57 2A              LDA PLAYER_BULLET_EXPLOSION5
+01837  12AB  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01838  12AE  20 75 0D              JSR UPDATEPLAYERBULLETSPRITE
+01839  12B1  60                    RTS
+01840  12B2             @DESTROY
+01841  12B2  A9 00                 LDA #%00000000
+01842  12B4  8D 1C D0              STA SPRITE_MULTICOLOUR_ENABLE
+01843  12B7  A9 00                 LDA #0
+01844  12B9  8D 06 70              STA PLAYER_BULLET_EXPLOSION_COUNTER
+01845  12BC             
+01846  12BC             
+01847  12BC  AD 15 D0              LDA SPRITE_ENABLED
+01848  12BF  29 FD                 AND #%11111101
+01849  12C1  8D 15 D0              STA SPRITE_ENABLED
+01850  12C4  AD 4F 2A              LDA PLAYER_BULLET_HORI
+01851  12C7  8D 4C 2A              STA PLAYER_BULLET_SPRITE_INDEX
+01852  12CA             @CONT
+01853  12CA  60                    RTS
+01854  12CB             
+01855  12CB             HANDLETALK 
+01856  12CB  20 77 0A              JSR READJOYSTICK
+01857  12CE  A5 02                 LDA JOYSTICK_INPUT
+01858  12D0  C9 01                 CMP PLAYER_ACTION
+01859  12D2  F0 03                 BEQ @PROCESSTALK
+01860  12D4  4C 66 08              JMP GAMELOOP
+01861  12D7             @PROCESSTALK 
+01862  12D7  38                    SEC
+01863  12D8  AD 45 2A              LDA PLAYER_X
+01864  12DB                        
+01865  12DB  ED 76 2A              SBC NPC1_X
+01866  12DE  C9 10                 CMP #16
+01867  12E0  90 09                 BCC @CHECKNPC1Y
+01868  12E2  C9 EF                 CMP #239
+01869  12E4  F0 16                 BEQ @CHECKNPC2
+01870  12E6  B0 03                 BCS @CHECKNPC1Y
+01871  12E8             @CONTTALK
+01872  12E8  4C 66 08              JMP GAMELOOP
+01873  12EB             @CHECKNPC1Y 
+01874  12EB  38                    SEC
+01875  12EC  AD 46 2A              LDA PLAYER_Y
+01876  12EF  ED 77 2A              SBC NPC1_Y
+01877  12F2  C9 10                 CMP #16
+01878  12F4  90 29                 BCC @TALKTONPC1
+01879  12F6  C9 EF                 CMP #239
+01880  12F8  F0 02                 BEQ @CHECKNPC2
+01881  12FA  B0 23                 BCS @TALKTONPC1
+01882  12FC             @CHECKNPC2 
+01883  12FC  38                    SEC
+01884  12FD  AD 45 2A              LDA PLAYER_X
+01885  1300                        
+01886  1300  ED 78 2A              SBC NPC2_X
+01887  1303  C9 10                 CMP #16
+01888  1305  90 06                 BCC @CHECKNPC2Y
+01889  1307  C9 EF                 CMP #239
+01890  1309  F0 DD                 BEQ @CONTTALK
+01891  130B  B0 00                 BCS @CHECKNPC2Y
+01892  130D             @CHECKNPC2Y 
+01893  130D  38                    SEC
+01894  130E  AD 46 2A              LDA PLAYER_Y
+01895  1311  ED 79 2A              SBC NPC2_Y
+01896  1314  C9 10                 CMP #16
+01897  1316  90 0B                 BCC @TALKTONPC2
+01898  1318  C9 EF                 CMP #239
+01899  131A  B0 07                 BCS @TALKTONPC2
+01900  131C  4C 66 08              JMP GAMELOOP
+01901  131F             @TALKTONPC1 
+01902  131F  20 27 13              JSR @DRAWDIALOGUE
+01903  1322  60                    RTS
+01904  1323             @TALKTONPC2 
+01905  1323  20 27 13              JSR @DRAWDIALOGUE
+01906  1326  60                    RTS
+01907  1327             @DRAWDIALOGUE 
+01908  1327                        
+01909  1327  60                    RTS
+01910  1328             TOGGLETILES 
+01911  1328                        ;LDX LEVEL1_TILE_COUNTER
+01912  1328                        ;INX
+01913  1328                        ;STX LEVEL1_TILE_COUNTER
+01914  1328                        ;CPX #128
+01915  1328                        ;BEQ TURNOFFTILES
+01916  1328                        ;CPX #255
+01917  1328  F0 04                 BEQ TURNONTILES
+01918  132A  60                    RTS
+01919  132B             TURNOFFTILES 
+01920  132B  A9 20                 LDA #32
+01921  132D             
+01922  132D             
+01923  132D             
+01924  132D             
+01925  132D             
+01926  132D             
+01927  132D             
+01928  132D             
+01929  132D             
+01930  132D                        
+01931  132D  60                    RTS
+01932  132E             
+01933  132E             TURNONTILES 
+01934  132E  A9 58                 LDA #88
+01935  1330             
+01936  1330             
+01937  1330             
+01938  1330             
+01939  1330             
+01940  1330             
+01941  1330             
+01942  1330             
+01943  1330             
+01944  1330  A9 00                 LDA #0
+01945  1332  8D 09 70              STA LEVEL1_TILE_COUNTER
+01946  1335  60                    RTS
+01947  1336             
+01948  1336             
+01949  1336             ; FLAVOUR TEXT
+01950  1336  04 0F 20   FT_LEVEL1  TEXT 'DO YOU WISH TO LAPSE IN LIMBO FOREVER? NO! NO! BE RESOLUTE! FREE YOUR MIND OF ANGER AND AGGRESSION IF YOU EVER WANT TO END THIS FUTURE DREAM.'
+01951  13C3  00                    BYTE 00
+01952  13C4  19 0F 15   FT_LEVEL2  TEXT 'YOU ARE THREE SOULS OF THE FLESH, CHOSEN FROM DIFFERENT ERAS ANCIENT AND MODERN, REPRESENTATIVES OF YOUR OWN CHERISHED TIME. THE TRIVIA OF YOUR MORTAL LIVES IS UNIMPORTANT TO ME. INDEED, SOME MAY DIE.'
+01953  148C  00                    BYTE 00
+01954  148D  0C 0F 0F   FT_LEVEL2P2 TEXT 'LOOK AROUND, BUT LINGER NOT. WHERE I LEAD YOU WILL FOLLOW. MARK THESE WORDS WELL: IGNITE MY ANGER WITH YOUR DELAY AND PUNISHMENTS WILL COME YOUR WAY.'
+01955  1522  00                    BYTE 00
+01956  1523  14 08 05   FT_LEVEL2P3 TEXT 'THERE IS DANGER AHEAD, BUT DO NOT BE AFRAID. FOR I AM WITH YOU, AS WATER, AS AIR, AS BREATH ITSELF IN THIS PLACE OF NO TIME AND NO SPACE. BE RESOLUTE. THERE ARE TRIALS AHEAD... AND REWARDS FOR THOSE WHO STRIVE.'
+01957  15F5  00                    BYTE 00
+01958  15F6  19 0F 15   FT_LEVEL2P4 TEXT 'YOU HAVE A TASK! TO RELEASE YOURSELVES FROM THIS WEB OF WISDOM, THIS KNOTTED MAZE OF DELERIUM YOU MUST ENTER THE NUCLEAR PORTALS OF THE ELECTRIC CASTLE!'
+01959  168E  00                    BYTE 00
+01960  168F  09 14 20   FT_LEVEL3  TEXT 'IT IS TIME TO REFLECT UPON YOUR EGO SELF. NOWHERE TO HIDE WHEN THE WALLS ECHO THE YOU THAT WE ALL SEE. FROM THESE WIND TORN RAMPARTS WE SURVEY A THOUSAND FUTURES. BREATH DEEP THE INTOXICATING AROMA OF ENDLESS ENTWINED EMOTIONS. THE SURREAL SEARCH ENDURES.'
+01961  178E  00                    BYTE 00
+01962  178F  C1 48 20   FT_LEVEL4  TEXT "AH MY FRIENDS! SO LIGHT OF FOOT! SO SWIFT! YOUVE COME THIS FAR. AND NOW, HERE BENEATH THE ANCIENT OMNISCIENT BOUGHS OF THE DECISION TREE, ONE OF YOU MUST DEPART THIS WORLD OF FLESH. ONLY TWO MAY CONTINUE. ONLY YOU CAN DECIDE!"
+01963  1870  00                    BYTE 00
+01964  1871  D3 54 45   FT_LEVEL5  TEXT "STEP FORWARD! STEP FORWARD! BEYOND THIS LIES YOUR GOAL! BEHOLD! THE STAR TOWERS OF THE ELECTRIC CASTLE. SEE HOW IT EMBRACES THE SKY, HOW INSIGNIFICANT THE MERE MORTAL, DWRFED BY THE MAJESTY OF ITS ELECTRIC EDIFICE!"
+01965  1947  00                    BYTE 00
+01966  1948  01 14 20   FT_LEVEL6  TEXT 'AT LAST YOU ENTER THE NUCLEAR PORTALS OF PSYCHOGENESIS. HERE IN THIS VAST HALL WHERE EVEN SHADOWS FEAR THE LIGHT YOU MUST CONFRONT YOUR PAST. IF YOU HAVE KILLED BEWARE THE GATHERING OF SPIRITS FOR HERE THE DISEMBODIED ASTRAL WORLD BECOMES FLESH ONCE MORE.'
+01967  1A47  00                    BYTE 00
+01968  1A48  19 0F 15   FT_LEVEL7  TEXT 'YOU CRAVED THE ANSWER BUT CAN YOU BEAR THE TRUTH? THE FUTURES DOORED INGRESS! WHAT LIES BEYOND? GUIDE YOUR CHOICE WITH COLLECTIVE WISDOM FOR ONE GATE SEVERS ALL CONNECTIONS. ONE STEP AWAY FROM THE DREAMWORLD OF EVERLASTING EBONY YOU CALL OBLIVION.'
+01969  1B3F  00                    BYTE 00
+01970  1B40  09 20 01   FT_END1    TEXT 'I AM OF THE STARS. I AM CALLED FOREVER. IT IS COLD BEYOND YOUR SUN WHERE WE COME FROM. WE PEOPLED YOUR PLANET. BUT THE FINAL EXPERIMENT HAS FAILED. THE EARTH HAS DIED. YOUR WORLD IS AT REST. BUT I OFFER YOU THIS. A FINAL SOLUTION. A CHANCE TO SURVIVE.'
+01971  1C3B  00                    BYTE 00
+01972  1C3C  17 05 20   FT_END2    TEXT 'WE CAN SAVE YOUR ILL FATED RACE WHO ARE LOST UPON THE OCEAN OF SPACE. THROUGH THEIR EYES WE WILL SEE. WITH THEIR HANDS WE WILL CREATE. IN THEIR WORLD WE WILL BE FREE. WITH OUR MINDS WE WILL SHAPE THEIR FATE. MAKE US WHOLE MIGRATOR SOUL!'
+01973  1D28  00                    BYTE 00
+01974  1D29  14 08 05   FT_END3    TEXT 'THE FATE OF THE FINAL EXPERIMENT IS NOW IN YOUR HANDS'
+01975  1D5E  00                    BYTE 00
+01976  1D5F  14 08 05   FT_GAMEOVER TEXT 'THE EXPERIMENT IS OVER. I GROW WEARY. SO TIRED. LET THE DREAM OF CONFUSION LEAD YOU INTO THE VIRGIN LIGHT. BE ALL SEEING, BE BRAVE. BEGONE!'
+01977  1DEA  00                    BYTE 00
+01978  1DEB             
 
-******* 79 Label(s) *******
-~~~block1{00011} = $0BE3 
-~~~block1{00012} = $0C1F 
-~~~block2{00011} = $0BF1 
-~~~block2{00012} = $0C2D 
-~~~block3{00011} = $0BFF 
-~~~block3{00012} = $0C3B 
-~~~block4{00011} = $0C0D 
-~~~block4{00012} = $0C49 
-~~~loop{00002} = $090A 
-~~~loop{00005} = $095D 
-BOX_SELECTOR_BL = $53EA 
-BOX_SELECTOR_BR = $53EB 
-BOX_SELECTOR_TL = $53E8 
-BOX_SELECTOR_TR = $53E9 
-CheckForAction = $0EB9 
-CheckForSelectedActionChange = $0DD1 
-CheckForWallCollision = $0C59 
-ClearScreen = $0976 
-DestroyBullet = $0C7C 
-DrawLevel = $0BE1 
-DrawTitle = $0C1D 
-FT_END1 = $160F 
-FT_END2 = $170B 
-FT_END3 = $17F6 
-FT_GAMEOVER = $182C 
-FT_LEVEL1 = $1019 
-FT_LEVEL2 = $1114 
-FT_LEVEL2P2 = $1205 
-FT_LEVEL2P3 = $12A5 
-FT_LEVEL3 = $1323 
-FT_LEVEL4 = $1413 
-FT_LEVEL5 = $1513 
-GameLoop = $085D 
-HandleAction = $0D30 
-HandleBulletExplosion = $0FAC 
-InitCharacterSet = $0BC1 
-InitGame = $084A 
-InitPlayerState = $0C89 
-InitSprites = $0B81 
-KillPlayer = $0C65 
-MovePlayer = $0A3A 
-NextLevel = $094C 
-PLAYER_BULLET_EXPLOSION1 = $53FB 
-PLAYER_BULLET_EXPLOSION2 = $53FC 
-PLAYER_BULLET_EXPLOSION3 = $53FD 
-PLAYER_BULLET_EXPLOSION4 = $53FE 
-PLAYER_BULLET_EXPLOSION5 = $53FF 
-PLAYER_BULLET_HORI = $53F7 
-PLAYER_BULLET_NWSE = $53F9 
-PLAYER_BULLET_SPRITE_INDEX = $53F4 
-PLAYER_BULLET_SWNE = $53FA 
-PLAYER_BULLET_VERT = $53F8 
-PLAYER_BULLET_X = $53F5 
-PLAYER_BULLET_Y = $53F6 
-PLAYER_DOWN = $53F3 
-PLAYER_IDLE = $53EF 
-PLAYER_LEFT = $53F1 
-PLAYER_RIGHT = $53F0 
-PLAYER_SPRITE_INDEX = $53EC 
-PLAYER_UP = $53F2 
-PLAYER_X = $53ED 
-PLAYER_Y = $53EE 
-PlayFootstep = $0C99 
-PlayLaser = $0CE1 
-PlayZap = $0CBD 
-rasterloop = $085D 
-ReadJoystick = $097C 
-ReadJoystick1 = $09DB 
-ResetActionSelector = $0E92 
-SetActionShoot = $0E2F 
-SetActionTalk = $0E50 
-SetActionUse = $0E71 
-TitleLoop = $083E 
-UpdateLastAimDir = $0D05 
-UpdatePlayerAnimationFrame = $0AFC 
-UpdatePlayerBulletPosition = $0B74 
-UpdatePlayerBulletSprite = $0BBA 
-UpdatePlayerSprite = $0BB3 
-UpdatePlayerSpritePosition = $0B67 
+******* 137 Label(s) *******
+~~~block1{00023} = $0DBA 
+~~~block1{00024} = $0DF6 
+~~~block2{00023} = $0DC8 
+~~~block2{00024} = $0E04 
+~~~block3{00023} = $0DD6 
+~~~block3{00024} = $0E12 
+~~~block4{00023} = $0DE4 
+~~~block4{00024} = $0E20 
+~~~loop{00003} = $09A5 
+~~~loop{00006} = $09F8 
+BOX_SELECTOR_BL = $2A42 
+BOX_SELECTOR_BR = $2A43 
+BOX_SELECTOR_TL = $2A40 
+BOX_SELECTOR_TR = $2A41 
+BUTTON_FRAME1 = $2A6B 
+BUTTON_FRAME2 = $2A6C 
+BUTTON_FRAME3 = $2A6D 
+BUTTON_SPRITE_INDEX = $2A68 
+BUTTON_X = $2A69 
+BUTTON_Y = $2A6A 
+BUTTON2_FRAME1 = $2A71 
+BUTTON2_FRAME2 = $2A72 
+BUTTON2_FRAME3 = $2A73 
+BUTTON2_SPRITE_INDEX = $2A6E 
+BUTTON2_X = $2A6F 
+BUTTON2_Y = $2A70 
+CheckForAction = $10EF 
+CheckForSelectedActionChange = $1007 
+CheckForSpriteCollision = $0E3E 
+CheckForWallCollision = $0E30 
+ClearScreen = $0A71 
+DestroyBullet = $0EB5 
+DestroyDoor2 = $0A61 
+DOOR_FRAME1 = $2A5B 
+DOOR_FRAME2 = $2A5C 
+DOOR_FRAME3 = $2A5D 
+DOOR_FRAME4 = $2A5E 
+DOOR_FRAME5 = $2A5F 
+DOOR_SPRITE_INDEX = $2A58 
+DOOR_X = $2A59 
+DOOR_Y = $2A5A 
+DrawLevel = $0DB8 
+DrawTitle = $0DF4 
+FT_END1 = $1B40 
+FT_END2 = $1C3C 
+FT_END3 = $1D29 
+FT_GAMEOVER = $1D5F 
+FT_LEVEL1 = $1336 
+FT_LEVEL2 = $13C4 
+FT_LEVEL2P2 = $148D 
+FT_LEVEL2P3 = $1523 
+FT_LEVEL2P4 = $15F6 
+FT_LEVEL3 = $168F 
+FT_LEVEL4 = $178F 
+FT_LEVEL5 = $1871 
+FT_LEVEL6 = $1948 
+FT_LEVEL7 = $1A48 
+GameLoop = $0866 
+HandleAction = $0F69 
+HandleBulletExplosion = $1254 
+HandleDoor2Open = $0A11 
+HandleTalk = $12CB 
+HORI_DOOR_FRAME1 = $2A63 
+HORI_DOOR_FRAME2 = $2A64 
+HORI_DOOR_FRAME3 = $2A65 
+HORI_DOOR_FRAME4 = $2A66 
+HORI_DOOR_FRAME5 = $2A67 
+HORI_DOOR_SPRITE_INDEX = $2A60 
+HORI_DOOR_X = $2A61 
+HORI_DOOR_Y = $2A62 
+InitCharacterSet = $0D98 
+InitGame = $0853 
+InitPlayerState = $0EC2 
+InitSprites = $0CD7 
+KillNPC1 = $0E62 
+KillNPC2 = $0E6E 
+KillPlayer = $0E9E 
+MovePlayer = $0B35 
+NextLevel = $09E7 
+NPC1_SPRITE_INDEX = $2A74 
+NPC1_X = $2A76 
+NPC1_Y = $2A77 
+NPC2_SPRITE_INDEX = $2A75 
+NPC2_X = $2A78 
+NPC2_Y = $2A79 
+OpenDoor1 = $0E7A 
+OpenDoor2 = $0E8C 
+PLAYER_BULLET_EXPLOSION1 = $2A53 
+PLAYER_BULLET_EXPLOSION2 = $2A54 
+PLAYER_BULLET_EXPLOSION3 = $2A55 
+PLAYER_BULLET_EXPLOSION4 = $2A56 
+PLAYER_BULLET_EXPLOSION5 = $2A57 
+PLAYER_BULLET_HORI = $2A4F 
+PLAYER_BULLET_NWSE = $2A51 
+PLAYER_BULLET_SPRITE_INDEX = $2A4C 
+PLAYER_BULLET_SWNE = $2A52 
+PLAYER_BULLET_VERT = $2A50 
+PLAYER_BULLET_X = $2A4D 
+PLAYER_BULLET_Y = $2A4E 
+PLAYER_DOWN = $2A4B 
+PLAYER_IDLE = $2A47 
+PLAYER_LEFT = $2A49 
+PLAYER_RIGHT = $2A48 
+PLAYER_SPRITE_INDEX = $2A44 
+PLAYER_UP = $2A4A 
+PLAYER_X = $2A45 
+PLAYER_Y = $2A46 
+PlayFootstep = $0ED2 
+PlayLaser = $0F1A 
+PlayZap = $0EF6 
+rasterloop = $0866 
+ReadJoystick = $0A77 
+ReadJoystick1 = $0AD6 
+ResetActionSelector = $10C8 
+SetActionShoot = $1065 
+SetActionTalk = $1086 
+SetActionUse = $10A7 
+TitleLoop = $0847 
+ToggleTiles = $1328 
+TurnOffTiles = $132B 
+TurnOnTiles = $132E 
+UpdateButton2Position = $0CB0 
+UpdateButton2Sprite = $0D91 
+UpdateButtonPosition = $0CA3 
+UpdateButtonSprite = $0D8A 
+UpdateDoorPosition = $0C89 
+UpdateDoorSprite = $0D7C 
+UpdateHoriDoorPosition = $0C96 
+UpdateHoriDoorSprite = $0D83 
+UpdateLastAimDir = $0F3E 
+UpdateNPC1Position = $0CBD 
+UpdateNPC2Position = $0CCA 
+UpdatePlayerAnimationFrame = $0C04 
+UpdatePlayerBulletPosition = $0C7C 
+UpdatePlayerBulletSprite = $0D75 
+UpdatePlayerSprite = $0D6E 
+UpdatePlayerSpritePosition = $0C6F 
 
-******* 24 Unused label(s) *******
+******* 33 Unused label(s) *******
 @ActCont
 @ActionCanProceed
+@ActionSwitch
+@BulletOverflowLeft
+@BulletOverflowRight
 @CheckBtn
 @CheckBtn
 @CheckDown
 @CheckDown
 @CheckDown
+@CheckForBulletOverflow
+@CheckForBulletOverflowL
 @CheckLeft
 @CheckLeft
 @CheckLeft
 @CheckLeftWrap
 @CheckLives
+@CheckNPC1Y
+@CheckNPC2
+@CheckNPC2Y
 @CheckRight
 @CheckRight
 @CheckRight
@@ -1520,8 +2149,19 @@ UpdatePlayerSpritePosition = $0B67
 @Continue
 @Continue
 @continueProcessing
+@conttalk
 @Destroy
+@DestroyDoor1
+@Door1OpenFrame1
+@Door1OpenFrame2
+@Door1OpenFrame3
+@Door1OpenFrame4
+@Door2OpenFrame1
+@Door2OpenFrame2
+@Door2OpenFrame3
+@Door2OpenFrame4
 @DownFrame1
+@DrawDialogue
 @DyingFrame1
 @Exit
 @Frame1
@@ -1533,6 +2173,7 @@ UpdatePlayerSpritePosition = $0B67
 @GameOverLoop
 @GotoTitle
 @HandleAction
+@HandleDoor1Open
 @HandleDying
 @InputBtn
 @InputBtn
@@ -1554,12 +2195,16 @@ UpdatePlayerSpritePosition = $0B67
 @MoveBulletSE
 @MoveBulletSW
 @MoveBulletW
+@openD2
 @process
 @process
 @ProcessActionUpdate
+@processtalk
 @Respawn
 @RightFrame1
 @SetAimDir
+@SetBulletXOverflowOff
+@SetBulletXOverflowOn
 @SetDown
 @SetLeft
 @SetRight
@@ -1573,34 +2218,46 @@ UpdatePlayerSpritePosition = $0B67
 @ShootUp
 @ShootUpLeft
 @ShootUpRight
+@TalkToNPC1
+@TalkToNPC2
+@TriggerTalk
 @UpdateAction
 @UpFrame1
-~~~block1{00011}
-~~~block1{00012}
-~~~block2{00011}
-~~~block2{00012}
-~~~block3{00011}
-~~~block3{00012}
-~~~block4{00011}
-~~~block4{00012}
-~~~loop{00002}
-~~~loop{00005}
+~~~block1{00023}
+~~~block1{00024}
+~~~block2{00023}
+~~~block2{00024}
+~~~block3{00023}
+~~~block3{00024}
+~~~block4{00023}
+~~~block4{00024}
+~~~loop{00003}
+~~~loop{00006}
+BUTTON_FRAME2
+BUTTON2_FRAME1
+BUTTON2_FRAME2
+BUTTON2_FRAME3
 FT_END1
 FT_END2
 FT_END3
 FT_LEVEL2
 FT_LEVEL2P2
 FT_LEVEL2P3
+FT_LEVEL2P4
 FT_LEVEL3
 FT_LEVEL4
 FT_LEVEL5
+FT_LEVEL6
+FT_LEVEL7
+HORI_DOOR_FRAME5
 InitCharacterSet
 InitPlayerState
 PLAYER_DOWN
 PLAYER_LEFT
 PLAYER_RIGHT
+TurnOffTiles
 
-******* 106 Variable(s) *******
+******* 141 Variable(s) *******
 ACTION_SELECTOR_POS1  = $0795
 ACTION_SELECTOR_POS10  = $06F7
 ACTION_SELECTOR_POS11  = $0745
@@ -1626,6 +2283,9 @@ COLOUR_CYAN  = $0003
 COLOUR_LIGHT_BLUE  = $000E
 COLOUR_RED  = $0002
 COLOUR_WHITE  = $0001
+DOOR_SPRITE_DATA  = $2700
+DOOR1_OPEN_COUNTER  = $7007
+DOOR2_OPEN_COUNTER  = $7008
 JOYSTICK_INPUT  = $0002
 JOYSTICK_INPUT1  = $0002
 JOYSTICK_MASK_BTN  = $0010
@@ -1639,6 +2299,7 @@ LEVEL1_BLOCK1  = $5000
 LEVEL1_BLOCK2  = $50FF
 LEVEL1_BLOCK3  = $51FE
 LEVEL1_BLOCK4  = $52FD
+LEVEL1_TILE_COUNTER  = $7009
 PLAYER_ACTION  = $0001
 PLAYER_ACTION_SHOOT  = $0001
 PLAYER_ACTION_SWITCH_COOLDOWN  = $7004
@@ -1688,7 +2349,9 @@ SID_VOICE1_HI_FREQ  = $D401
 SID_VOICE1_LO_FREQ  = $D400
 SID_VOLUME  = $D418
 SPRITE_BG_COLLISION  = $D01F
+SPRITE_COLLISIONS  = $D01E
 SPRITE_ENABLED  = $D015
+SPRITE_MULTICOLOUR_ENABLE  = $D01C
 SPRITE_OVERFLOW  = $D010
 SPRITE0_COLOUR  = $D027
 SPRITE0_DATA  = $2000
@@ -1700,6 +2363,35 @@ SPRITE1_DATA  = $24C0
 SPRITE1_POINTER  = $07F9
 SPRITE1_X  = $D002
 SPRITE1_Y  = $D003
+SPRITE2_COLOUR  = $D029
+SPRITE2_POINTER  = $07FA
+SPRITE2_X  = $D004
+SPRITE2_Y  = $D005
+SPRITE3_COLOUR  = $D02A
+SPRITE3_DATA  = $2840
+SPRITE3_POINTER  = $07FB
+SPRITE3_X  = $D006
+SPRITE3_Y  = $D007
+SPRITE4_COLOUR  = $D02B
+SPRITE4_DATA  = $2980
+SPRITE4_POINTER  = $07FC
+SPRITE4_X  = $D008
+SPRITE4_Y  = $D009
+SPRITE5_COLOUR  = $D02C
+SPRITE5_DATA  = $2980
+SPRITE5_POINTER  = $07FD
+SPRITE5_X  = $D00A
+SPRITE5_Y  = $D00B
+SPRITE6_COLOUR  = $D02D
+SPRITE6_DATA  = $2000
+SPRITE6_POINTER  = $07FE
+SPRITE6_X  = $D00C
+SPRITE6_Y  = $D00D
+SPRITE7_COLOUR  = $D02E
+SPRITE7_DATA  = $2000
+SPRITE7_POINTER  = $07FF
+SPRITE7_X  = $D00E
+SPRITE7_Y  = $D00F
 StrOut  = $AB1E
 TEXT_COLOUR  = $0286
 tgt_c64  = $0001
@@ -1707,9 +2399,10 @@ TITLE_BLOCK1  = $5400
 TITLE_BLOCK2  = $54FF
 TITLE_BLOCK3  = $55FE
 TITLE_BLOCK4  = $56FD
-******* -52 Unused variables(s) *******
+******* -67 Unused variables(s) *******
 CHARSET
 COLOUR_CYAN
+DOOR_SPRITE_DATA
 LEVEL1_BLOCK1
 LEVEL1_BLOCK2
 LEVEL1_BLOCK3
@@ -1729,6 +2422,17 @@ SID_VOICE1_LO_FREQ
 SID_VOLUME
 SPRITE0_DATA
 SPRITE1_DATA
+SPRITE2_COLOUR
+SPRITE3_COLOUR
+SPRITE3_DATA
+SPRITE4_COLOUR
+SPRITE4_DATA
+SPRITE5_COLOUR
+SPRITE5_DATA
+SPRITE6_COLOUR
+SPRITE6_DATA
+SPRITE7_COLOUR
+SPRITE7_DATA
 StrOut
 tgt_c64
 TITLE_BLOCK1

@@ -101,3 +101,13 @@ defm PlaySound
         lda /6
         sta SID_VOICE1_CONTROL
 endm
+
+defm StoreLevel1Tiles
+        ;sta $0527
+        ;sta $04db
+        ;sta $052f
+        ;sta $05f9
+        ;sta $0645
+        ;sta $05f1
+        ;sta $063d
+endm

@@ -156,15 +156,16 @@ MovePlayer
         jsr PlayFootstep
         ;Right side wrap
         lda SPRITE_OVERFLOW
-        cmp #%00000001
-        beq @CheckWrap 
+        and #%00000001
+        bne @CheckWrap 
         ldx PLAYER_X
         cpx #255
         bne @Continue
         lda SPRITE_OVERFLOW
         ora #%00000001
         sta SPRITE_OVERFLOW
-        sta PLAYER_X
+        ldx #0
+        stx PLAYER_X
         rts
 @Continue
         rts
@@ -174,7 +175,9 @@ MovePlayer
         bne @Continue
         ldx #0
         stx PLAYER_X
-        stx SPRITE_OVERFLOW
+        lda SPRITE_OVERFLOW
+        and #%11111110
+        sta SPRITE_OVERFLOW
         jsr NextLevel
         rts
 @CheckDown
@@ -200,13 +203,14 @@ MovePlayer
         jsr PlayFootstep
         ; Left side wrap
         lda SPRITE_OVERFLOW
-        cmp #%00000001
-        beq @CheckLeftWrap
+        and #%00000001
+        bne @CheckLeftWrap
         lda SPRITE_OVERFLOW
         ldx PLAYER_X
         cpx #0
         bne @Continue
-        lda #%00000001
+        lda SPRITE_OVERFLOW
+        ora #%00000001
         sta SPRITE_OVERFLOW
         lda #80
         sta PLAYER_X
@@ -215,8 +219,9 @@ MovePlayer
         ldx PLAYER_X
         cpx #0
         bne @Continue
-        ldx #%00000000
-        stx SPRITE_OVERFLOW
+        lda SPRITE_OVERFLOW
+        and #%11111110
+        sta SPRITE_OVERFLOW
         ldx #255
         stx PLAYER_X
         rts
@@ -299,10 +304,75 @@ UpdatePlayerBulletPosition
         sta SPRITE1_Y
         rts
 
+UpdateDoorPosition
+        lda DOOR_X
+        sta SPRITE2_X
+        lda DOOR_Y
+        sta SPRITE2_Y
+        rts
+
+UpdateHoriDoorPosition
+        lda HORI_DOOR_X
+        sta SPRITE3_X
+        lda HORI_DOOR_Y
+        sta SPRITE3_Y
+        rts
+
+UpdateButtonPosition
+        lda BUTTON_X
+        sta SPRITE4_X
+        lda BUTTON_Y
+        sta SPRITE4_Y
+        rts
+
+UpdateButton2Position
+        lda BUTTON2_X
+        sta SPRITE5_X
+        lda BUTTON2_Y
+        sta SPRITE5_Y
+        rts
+
+UpdateNPC1Position
+        lda NPC1_X
+        sta SPRITE6_X
+        lda NPC1_Y
+        sta SPRITE6_Y
+        rts
+
+UpdateNPC2Position
+        lda NPC2_X
+        sta SPRITE7_X
+        lda NPC2_Y
+        sta SPRITE7_Y
+        rts
+
 InitSprites
-        EnableSprites #%00000001
+        EnableSprites #%11111101
+        lda PLAYER_IDLE
+        STA PLAYER_SPRITE_INDEX
+        STA NPC1_SPRITE_INDEX
+        STA NPC2_SPRITE_INDEX
+        LDA PLAYER_BULLET_HORI
+        STA PLAYER_BULLET_SPRITE_INDEX
+        LDA DOOR_FRAME1
+        STA DOOR_SPRITE_INDEX
+        LDA HORI_DOOR_FRAME1
+        STA HORI_DOOR_SPRITE_INDEX
+        
+        LDA BUTTON_FRAME1
+        STA BUTTON_SPRITE_INDEX
+        STA BUTTON2_SPRITE_INDEX
         PointToSpriteData PLAYER_SPRITE_INDEX,SPRITE0_POINTER
         PointToSpriteData PLAYER_BULLET_SPRITE_INDEX,SPRITE1_POINTER
+        PointToSpriteData DOOR_SPRITE_INDEX,SPRITE2_POINTER
+        PointToSpriteData HORI_DOOR_SPRITE_INDEX,SPRITE3_POINTER
+        PointToSpriteData BUTTON_SPRITE_INDEX,SPRITE4_POINTER
+        PointToSpriteData BUTTON2_SPRITE_INDEX,SPRITE5_POINTER
+        PointToSpriteData NPC1_SPRITE_INDEX,SPRITE6_POINTER
+        PointToSpriteData NPC2_SPRITE_INDEX,SPRITE7_POINTER
+        lda SPRITE_OVERFLOW
+        ora #%10101000 
+        sta SPRITE_OVERFLOW
         lda COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
         lda COLOUR_RED
@@ -315,6 +385,12 @@ InitSprites
         stx PLAYER_BULLET_Y
         jsr UpdatePlayerSpritePosition
         jsr UpdatePlayerBulletPosition
+        jsr UpdateHoriDoorPosition
+        jsr UpdateDoorPosition
+        jsr UpdateButtonPosition
+        jsr UpdateButton2Position
+        jsr UpdateNPC1Position
+        jsr UpdateNPC2Position
         rts
 
 UpdatePlayerSprite
@@ -323,6 +399,22 @@ UpdatePlayerSprite
 
 UpdatePlayerBulletSprite
         PointToSpriteData PLAYER_BULLET_SPRITE_INDEX,SPRITE1_POINTER
+        rts
+
+UpdateDoorSprite
+        PointToSpriteData DOOR_SPRITE_INDEX,SPRITE2_POINTER
+        rts
+
+UpdateHoriDoorSprite
+        PointToSpriteData HORI_DOOR_SPRITE_INDEX,SPRITE3_POINTER
+        rts
+
+UpdateButtonSprite
+        PointToSpriteData BUTTON_SPRITE_INDEX,SPRITE4_POINTER
+        rts
+
+UpdateButton2Sprite
+        PointToSpriteData BUTTON2_SPRITE_INDEX,SPRITE5_POINTER
         rts
 
 InitCharacterSet
@@ -350,11 +442,58 @@ DrawTitle
 
 CheckForWallCollision
         lda SPRITE_BG_COLLISION
-        cmp #%00000001
-        beq KillPlayer
-        cmp #%00000010
-        beq DestroyBullet
+        tay
+        and #%00000010
+        bne DestroyBullet
+        tya
+        and #%00000001
+        bne KillPlayer
 @Continue
+        rts
+
+CheckForSpriteCollision
+        lda SPRITE_COLLISIONS
+        cmp #%00000101 ; player and door 1
+        beq KillPlayer
+        cmp #%00000110 ; door1 and bullet
+        beq DestroyBullet
+        cmp #%00001001 ; door 2 and player
+        beq KillPlayer
+        cmp #%00001010 ; door 2 and bullet
+        beq DestroyBullet
+        cmp #%00010010 ; bullet and button 1
+        beq OpenDoor1
+        cmp #%00100010
+        beq OpenDoor2
+        cmp #%01000010
+        beq KillNPC1
+        cmp #%10000010
+        beq KillNPC2
+        rts
+KillNPC1
+        jsr DestroyBullet
+        DisableSprite #%10111111
+        rts
+KillNPC2
+        jsr DestroyBullet
+        DisableSprite #%01111111
+        rts
+OpenDoor1
+        jsr DestroyBullet
+        lda BUTTON_FRAME3
+        sta BUTTON_SPRITE_INDEX
+        jsr UpdateButtonSprite
+        LDA #1
+        STA DOOR1_OPEN_COUNTER
+        rts
+
+OpenDoor2
+        jsr DestroyBullet
+        lda BUTTON_FRAME3
+        sta BUTTON2_SPRITE_INDEX
+        jsr UpdateButton2Sprite
+        LDA #1
+        STA DOOR2_OPEN_COUNTER
         rts
 
 KillPlayer
@@ -431,7 +570,7 @@ HandleAction
         jsr UpdateLastAimDir
         rts
 @process
-        jsr CheckForSelectedActionChange
+        ;jsr CheckForSelectedActionChange
         jsr CheckForAction
         jsr ReadJoystick1
         lda JOYSTICK_INPUT1
@@ -508,7 +647,7 @@ HandleAction
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 CheckForSelectedActionChange
-        lda JOYSTICK_INPUT
+        lda JOYSTICK_INPUT1
         and PLAYER_ACTION
         bne @UpdateAction
         rts
@@ -612,10 +751,12 @@ ResetActionSelector
         stx ACTION_SELECTOR_POS12
         rts
 CheckForAction
+        jsr ToggleTiles
         lda SPRITE_ENABLED
         and #%00000010
         beq @ActionCanProceed
         jsr @MoveBullet
+        
         rts
 @ActionCanProceed
         jsr ReadJoystick
@@ -634,11 +775,66 @@ CheckForAction
         sty PLAYER_BULLET_Y
         EnableSprite #%00000010
         jsr UpdatePlayerBulletPosition
+        lda SPRITE_OVERFLOW
+        and #%00000001
+        bne @SetBulletXOverflowOn
+        jsr @SetBulletXOverflowOff
         ;jsr UpdatePlayerBulletSprite
         rts
+@SetBulletXOverflowOn
+        lda SPRITE_OVERFLOW
+        ora #%00000010
+        sta SPRITE_OVERFLOW
+        rts
+@SetBulletXOverflowOff
+        lda SPRITE_OVERFLOW
+        and #%11111101
+        sta SPRITE_OVERFLOW
+        rts
 @MoveBullet
+        lda PLAYER_BULLET_X
+        cmp #255
+        beq @CheckForBulletOverflow
+        cmp #0
+        beq @CheckForBulletOverflowL
         jsr @process
         jsr UpdatePlayerBulletSprite
+        rts
+@CheckForBulletOverflow
+        lda PLAYER_BULLET_DIRECTION
+        cmp PLAYER_SHOOT_E
+        beq @BulletOverflowRight
+        cmp PLAYER_SHOOT_NE
+        beq @BulletOverflowRight
+        cmp PLAYER_SHOOT_SE
+        beq @BulletOverflowRight
+        jsr @process
+        jsr UpdatePlayerBulletSprite
+        rts
+@CheckForBulletOverflowL
+        lda PLAYER_BULLET_DIRECTION
+        cmp PLAYER_SHOOT_W
+        beq @BulletOverflowLeft
+        cmp PLAYER_SHOOT_SW
+        beq @BulletOverflowLeft
+        cmp PLAYER_SHOOT_NW
+        beq @BulletOverflowLeft
+        jsr @process
+        jsr UpdatePlayerBulletSprite
+        rts
+@BulletOverflowLeft
+        lda SPRITE_OVERFLOW
+        and #%11111101
+        sta SPRITE_OVERFLOW
+        lda #255
+        sta PLAYER_BULLET_X
+        rts
+@BulletOverflowRight
+        lda SPRITE_OVERFLOW
+        ora #%00000010
+        sta SPRITE_OVERFLOW
+        lda #0
+        sta PLAYER_BULLET_X
         rts
 @process
         lda PLAYER_BULLET_EXPLOSION_COUNTER
@@ -737,6 +933,8 @@ HandleBulletExplosion
         ldx PLAYER_BULLET_EXPLOSION_COUNTER
         cpx #0
         beq @Cont
+        lda #%00000010
+        sta SPRITE_MULTICOLOUR_ENABLE
         jsr PlayZap
         inx
         stx PLAYER_BULLET_EXPLOSION_COUNTER
@@ -779,6 +977,8 @@ HandleBulletExplosion
         jsr UpdatePlayerBulletSprite
         rts
 @Destroy
+        lda #%00000000
+        sta SPRITE_MULTICOLOUR_ENABLE
         lda #0
         sta PLAYER_BULLET_EXPLOSION_COUNTER
         DisableSprite #%11111101
@@ -786,3 +986,81 @@ HandleBulletExplosion
         sta PLAYER_BULLET_SPRITE_INDEX
 @Cont
         rts
+
+HandleTalk
+        jsr ReadJoystick
+        lda JOYSTICK_INPUT
+        cmp PLAYER_ACTION
+        beq @processtalk
+        jmp GameLoop
+@processtalk
+        sec
+        lda PLAYER_X
+        
+        sbc NPC1_X
+        cmp #16
+        bcc @CheckNPC1Y
+        cmp #239
+        beq @CheckNPC2
+        bcs @CheckNPC1Y
+@conttalk
+        jmp GameLoop
+@CheckNPC1Y
+        sec
+        lda PLAYER_Y
+        SBC NPC1_Y
+        CMP #16
+        BCC @TalkToNPC1
+        cmp #239
+        beq @CheckNPC2
+        bcs @TalkToNPC1
+@CheckNPC2
+        sec
+        lda PLAYER_X
+        
+        sbc NPC2_X
+        cmp #16
+        bcc @CheckNPC2Y
+        cmp #239
+        beq @conttalk
+        bcs @CheckNPC2Y
+@CheckNPC2Y
+        sec
+        lda PLAYER_Y
+        SBC NPC2_Y
+        CMP #16
+        BCC @TalkToNPC2
+        cmp #239
+        bcs @TalkToNPC2
+        jmp GameLoop
+@TalkToNPC1
+        jsr @DrawDialogue
+        rts
+@TalkToNPC2
+        jsr @DrawDialogue
+        rts
+@DrawDialogue
+        
+        rts
+ToggleTiles
+        ;ldx LEVEL1_TILE_COUNTER
+        ;inx 
+        ;stx LEVEL1_TILE_COUNTER
+        ;cpx #128
+        ;beq TurnOffTiles
+        ;cpx #255
+        beq TurnOnTiles
+        rts
+TurnOffTiles
+        lda #32
+        StoreLevel1Tiles
+        
+        rts
+
+TurnOnTiles
+        lda #88
+        StoreLevel1Tiles
+        lda #0
+        sta LEVEL1_TILE_COUNTER
+        rts
+
