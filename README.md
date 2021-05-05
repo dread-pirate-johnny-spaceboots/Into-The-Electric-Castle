@@ -5,7 +5,7 @@ Into the Electric Castle
 
 From a station on the moon of the planet Neptune you, FUTUREMAN, have been launched into a time beyond time, a space beyond space.
 
-Betwixt stygian skies, through the cranial vistas of psychogenesis and across a rainbow bridge atop wind torn ramparts that survey a thousand futures lay the electric edifice of a star tower.
+Betwixt stygian skies spied through the cranial vistas of psychogenesis atop wind torn ramparts that survey a thousand futures lay the electric edifice of a star tower.
 
 "You have a task! To release yourself from this web of wisdom, this knotted maze of delerium you must enter the nuclear portals of the Electric Castle!"
 

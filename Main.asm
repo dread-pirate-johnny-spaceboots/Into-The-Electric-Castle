@@ -283,19 +283,19 @@ FT_LEVEL1 text 'Do you wish to lapse in limbo forever? No! No! Be resolute! Free
           byte 00
 FT_LEVEL2 text 'You are three souls of the flesh, chosen from different eras ancient and modern, representatives of your own cherished time. The trivia of your mortal lives is unimportant to me. Indeed, some may die.'
           byte 00
-FT_LEVEL2P2 text 'Look around, but linger not. Where I lead you will follow. Mark these words well: Ignite my anger with your delay and punishments will come your way.'
+FT_LEVEL2P2 text 'There is danger ahead, but do not be afraid. For I am with you, as water, as air, as breath itself in this place of no time and no space. Be resolute. There are trials ahead... and rewards for those who strive.'
           byte 00
-FT_LEVEL2P3 text 'There is danger ahead, but do not be afraid. For I am with you, as water, as air, as breath itself in this place of no time and no space. Be resolute. There are trials ahead... and rewards for those who strive.'
+FT_LEVEL2P3 text 'Look around, but linger not. Where I lead you will follow. Mark these words well: Ignite my anger with your delay and punishments will come your way.'
           byte 00
-FT_LEVEL2P4 text 'You have a task! To release yourselves from this web of wisdom, this knotted maze of delerium you must enter the nuclear portals of the electric castle!'
+FT_LEVEL2P4 text 'You have a task! To release yourselves from this web of wisdom, this knotted maze of delerium you must enter the nuclear portals of the Electric Castle!'
           byte 00
 FT_LEVEL3 text 'It is time to reflect upon your ego self. Nowhere to hide when the walls echo the you that we all see. From these wind torn ramparts we survey a thousand futures. Breath deep the intoxicating aroma of endless entwined emotions. The surreal search endures.'
           byte 00
 FT_LEVEL4 text "Ah my friends! So light of foot! So swift! Youve come this far. And now, here beneath the ancient omniscient boughs of the Decision Tree, one of you must depart this world of flesh. Only two may continue. Only you can decide!"
           byte 00
-FT_LEVEL5 text "Step forward! Step forward! Beyond this lies your goal! Behold! The star towers of the electric castle. See how it embraces the sky, how insignificant the mere mortal, dwrfed by the majesty of its electric edifice!"
+FT_LEVEL5 text "Step forward! Step forward! Beyond this lies your goal! Behold! The star towers of the Electric Castle. See how it embraces the sky, how insignificant the mere mortal, dwrfed by the majesty of its electric edifice."
           byte 00
-FT_LEVEL6 text 'At last you enter the nuclear portals of Psychogenesis. Here in this vast hall where even shadows fear the light you must confront your past. If you have killed beware the gathering of spirits for here the disembodied astral world becomes flesh once more.'
+FT_LEVEL6 text 'At last you enter the Electric Castle. Here in this vast hall where even shadows fear the light you must confront your past. If you have killed beware the gathering of spirits, for here the disembodied astral world becomes flesh once more.'
           byte 00
 FT_LEVEL7 text 'You craved the answer but can you bear the truth? The futures doored ingress! What lies beyond? Guide your choice with collective wisdom for one gate severs all connections. One step away from the dreamworld of everlasting ebony you call oblivion.'
           byte 00
