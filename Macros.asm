@@ -1,8 +1,8 @@
 defm WaitForRaster
-RasterLoop
+@RasterLoop
         lda /1
         cmp RASTER_LINE
-        bne RasterLoop
+        bne @RasterLoop
 endm
 
 defm EnableSprites
@@ -79,7 +79,7 @@ defm PrintStr
         cmp RASTER_LINE
         bne @loop
         lda /1,x
-        sta $0400,x
+        sta $0400,x+/3
         inx
         cpx /2
         bne @loop
@@ -111,3 +111,75 @@ defm StoreLevel1Tiles
         ;sta $05f1
         ;sta $063d
 endm
+
+; Parameter must be xxx00000
+defm SetCharacterSet 
+        lda CHARSET_LOOKUP
+        and #%11111000
+        ora /1
+        sta CHARSET_LOOKUP    
+endm
+
+defm DisableMultiColorMode
+        lda SCREEN_CONTROL      
+        and #$ef               
+        sta SCREEN_CONTROL
+endm
+
+defm EnableMultiColorMode
+        lda SCREEN_CONTROL
+        ora #$10
+        sta SCREEN_CONTROL
+endm
+
+defm SetTextColor
+        lda /1
+        sta TEXT_COLOUR
+endm
+
+defm SetBackgroundColor
+        lda /1
+        sta BG_COLOUR
+endm
+
+defm SetBackgroundColor1
+        lda /1
+        sta BG_COLOUR1
+endm
+
+defm SetBackgroundColor2
+        lda /1
+        sta BG_COLOUR2
+endm
+
+defm SetBackgroundColor3
+        lda /1
+        sta BG_COLOUR3
+endm
+
+defm SetBackgroundColors
+        lda /1
+        sta BG_COLOUR
+        lda /2
+        sta BG_COLOUR1
+        lda /3
+        sta BG_COLOUR2
+        lda /4
+        sta BG_COLOUR3
+endm
+
+;InitCharacterSet
+;        lda CHARSET_LOOKUP
+;        ora #$r
+;        sta CHARSET_LOOKUP
+;        lda SCREEN_CONTROL
+;        ora #%00010000
+;        sta SCREEN_CONTROL
+;        lda COLOUR_LIGHT_BLUE
+;        sta BG_COLOUR1
+;        lda COLOUR_WHITE
+;        sta BG_COLOUR2
+;        lda COLOUR_RED
+;        sta BG_COLOUR3
+;        rts
+

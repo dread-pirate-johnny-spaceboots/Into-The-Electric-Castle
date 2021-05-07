@@ -7,7 +7,7 @@ From a station on the moon of the planet Neptune you, FUTUREMAN, have been launc
 
 Betwixt stygian skies spied through the cranial vistas of psychogenesis atop wind torn ramparts that survey a thousand futures lay the electric edifice of a star tower.
 
-"You have a task! To release yourself from this web of wisdom, this knotted maze of delerium you must enter the nuclear portals of the Electric Castle!"
+![Intro screenshot](https://github.com/dread-pirate-johnny-spaceboots/Into-The-Electric-Castle/blob/master/IntroScreenshot.png)
 
 How to Play
 -----------

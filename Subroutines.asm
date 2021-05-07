@@ -424,12 +424,13 @@ InitCharacterSet
         lda SCREEN_CONTROL
         ora #%00010000
         sta SCREEN_CONTROL
-        lda COLOUR_LIGHT_BLUE
-        sta BG_COLOUR1
-        lda COLOUR_WHITE
-        sta BG_COLOUR2
-        lda COLOUR_RED
-        sta BG_COLOUR3
+        ;lda COLOUR_LIGHT_BLUE
+        ;sta BG_COLOUR1
+        ;lda COLOUR_WHITE
+        ;sta BG_COLOUR2
+        ;lda COLOUR_RED
+        ;sta BG_COLOUR3
+        SetBackgroundColors COLOUR_BLACK,COLOUR_LIGHT_BLUE,COLOUR_WHITE,COLOUR_RED
         rts
 
 DrawLevel
@@ -438,6 +439,35 @@ DrawLevel
 
 DrawTitle
         DrawScreen TITLE_BLOCK1,TITLE_BLOCK2,TITLE_BLOCK3,TITLE_BLOCK4
+        rts
+
+DrawForever
+        ;DrawScreen FOREVER_BLOCK1,FOREVER_BLOCK2,FOREVER_BLOCK3,FOREVER_BLOCK4
+        ldx 240
+@Block2
+        lda FOREVER_BLOCK2,x
+        tay
+        sta SCREEN_BLOCK2,x
+        inx
+        cpx #255
+        bne @Block2
+        ldx #0
+@Block3
+        lda FOREVER_BLOCK3,x
+        tay
+        sta SCREEN_BLOCK3,x
+        inx
+        cpx #255
+        bne @Block3
+        ldx #0
+@Block4
+        lda FOREVER_BLOCK4,x
+        tay
+        sta SCREEN_BLOCK4,x
+        inx
+        cpx #255
+        bne @Block4
+        ldx #0
         rts
 
 CheckForWallCollision

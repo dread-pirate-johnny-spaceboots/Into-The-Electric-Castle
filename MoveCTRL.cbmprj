@@ -4,7 +4,7 @@
 <!-- Project Target : C64 -->
 <Project>
     <Target>2</Target>
-    <Executable>ITEC.prg</Executable>
+    <Executable>itec.prg</Executable>
     <StartAddress>2049</StartAddress>
     <FilesGlobal>False</FilesGlobal>
     <BatchMode>False</BatchMode>
@@ -15,7 +15,7 @@
     <Comments />
     <Author />
     <Email />
-    <AutoLaunchName>ITEC.prg</AutoLaunchName>
+    <AutoLaunchName>itec.prg</AutoLaunchName>
     <NoSingleFileBuild>False</NoSingleFileBuild>
     <CreatedWithVersion>CBM prg Studio 3.14.0</CreatedWithVersion>
     <HasGitRepo>True</HasGitRepo>
@@ -50,7 +50,7 @@
     <DetermineBuildOrder>0</DetermineBuildOrder>
     <PaddingByte>0</PaddingByte>
     <!--Screen designer settings-->
-    <AssyBinaryFileLocation>C:\Projects\c64\MoveCTRL\Level1.bin</AssyBinaryFileLocation>
+    <AssyBinaryFileLocation>D:\Projects\Bkup\c64\MoveCTRL\ForeverOftheStars.bin</AssyBinaryFileLocation>
     <AssyExportList />
     <!--End of screen designer settings-->
     <SourceFiles>
@@ -110,6 +110,28 @@
             <FileOpen>False</FileOpen>
         </SourceFile>
         <SourceFile>
+            <Name>Forever.cst</Name>
+            <PrgName />
+            <FileType>6</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>False</FileOpen>
+        </SourceFile>
+        <SourceFile>
+            <Name>ForeverOfTheStars.sdd</Name>
+            <PrgName />
+            <FileType>9</FileType>
+            <IncludeInBuild>True</IncludeInBuild>
+            <Regions />
+            <Breakpoints />
+            <Bookmarks />
+            <Topmost>False</Topmost>
+            <FileOpen>False</FileOpen>
+        </SourceFile>
+        <SourceFile>
             <Name>Level1.sdd</Name>
             <PrgName />
             <FileType>9</FileType>
@@ -150,7 +172,7 @@
             <Regions />
             <Breakpoints />
             <Bookmarks />
-            <Topmost>True</Topmost>
+            <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>
         <SourceFile>
@@ -182,7 +204,7 @@
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>852,</Bookmarks>
+            <Bookmarks>882,</Bookmarks>
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>

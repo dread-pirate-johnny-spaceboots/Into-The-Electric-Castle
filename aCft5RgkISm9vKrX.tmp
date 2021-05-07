@@ -17,11 +17,17 @@ incbin "Bullet.bin"
 *=CHARSET
 incbin "LevelGeo.bin"
 
+*=FOREVER_CHARSET
+incbin "ForeverCharset.bin"
+
 *=TITLE_BLOCK1
 incbin "Title.bin"
 
 *=LEVEL1_BLOCK1
 incbin "Level1.bin"
+
+*=FOREVER_BLOCK1
+incbin "ForeverOfTheStars.bin"
 
 *=DOOR_SPRITE_DATA
 incbin "Door.bin"
@@ -202,7 +208,7 @@ GameLoop
         sta TEXT_COLOUR
         lda COLOUR_RED
         sta BG_COLOUR
-        PrintStr FT_GAMEOVER,#$8B
+        PrintStr FT_GAMEOVER,#$8B,#0
 @GameOverLoop
         jsr ReadJoystick
         lda JOYSTICK_INPUT
@@ -228,9 +234,31 @@ NextLevel
         EnableSprites #%00000000
         lda COLOUR_WHITE
         sta TEXT_COLOUR
-        PrintStr FT_LEVEL1,#$8d
+        DisableMultiColorMode
+        SetCharacterSet #%00000101
+        jsr DrawForever
+        PrintStr FT_LEVEL1,#142,#$50
+NextLevelLoop
+        WaitForRaster #250
+        SetCharacterSet #%000000111    
+        
+        WaitForRaster #129
+        SetCharacterSet #%000000101
+        
         ldx PLAYER_LIVES
-        jmp TitleLoop
+        jsr ReadJoystick
+        lda JOYSTICK_INPUT
+        and PLAYER_ACTION
+        bne InitNewLevel
+        jmp NextLevelLoop
+InitNewLevel
+        jsr ClearScreen        
+        SetCharacterSet #%00000111
+        EnableMultiColorMode
+        SetTextColor COLOUR_LIGHT_BLUE
+        SetBackgroundColors COLOUR_BLACK,COLOUR_LIGHT_BLUE,COLOUR_WHITE,COLOUR_RED
+        jsr DrawLevel
+        jsr InitSprites
 @Exit
         rts
 HandleDoor2Open
@@ -281,7 +309,7 @@ DestroyDoor2
 incasm "Subroutines.asm"
 
 ; Flavour Text
-FT_LEVEL1 text 'Do you wish to lapse in limbo forever? No! No! Be resolute! Free your mind of anger and aggression if you ever want to end this future dream.'
+FT_LEVEL1 text 'Do you wish to lapse in limbo forever?  No! No! Be resolute! Free your mind of  anger and aggression if you ever want toend this future dream.'
           byte 00
 FT_LEVEL2 text 'You are three souls of the flesh, chosen from different eras ancient and modern, representatives of your own cherished time. The trivia of your mortal lives is unimportant to me. Indeed, some may die.'
           byte 00
