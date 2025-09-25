@@ -135,7 +135,7 @@ MovePlayer
         rts
 @CheckUp
         lda JOYSTICK_INPUT
-        and PLAYER_MOVED_UP
+        and #PLAYER_MOVED_UP
         beq @Continue
         ldy PLAYER_Y
         dey
@@ -146,7 +146,7 @@ MovePlayer
         rts
 @CheckRight
         lda JOYSTICK_INPUT
-        and PLAYER_MOVED_RIGHT
+        and #PLAYER_MOVED_RIGHT
         beq @Continue
         ldx PLAYER_X
         inx
@@ -182,7 +182,7 @@ MovePlayer
         rts
 @CheckDown
         lda JOYSTICK_INPUT
-        and PLAYER_MOVED_DOWN
+        and #PLAYER_MOVED_DOWN
         beq @Continue
         ldy PLAYER_Y
         iny
@@ -193,7 +193,7 @@ MovePlayer
         rts
 @CheckLeft
         lda JOYSTICK_INPUT
-        and PLAYER_MOVED_LEFT
+        and #PLAYER_MOVED_LEFT
         beq @Continue
         ldx PLAYER_X
         dex
@@ -230,62 +230,62 @@ MovePlayer
 #region Update Player Animation Frame
 UpdatePlayerAnimationFrame
         lda JOYSTICK_INPUT
-        and PLAYER_MOVED_RIGHT
+        and #PLAYER_MOVED_RIGHT
         bne @SetRight
         lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_LEFT
+        and #PLAYER_MOVED_LEFT
         bne @SetLeft
         lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_UP
+        and #PLAYER_MOVED_UP
         bne @SetUp
         lda JOYSTICK_INPUT        
-        and PLAYER_MOVED_DOWN
+        and #PLAYER_MOVED_DOWN
         bne @SetDown
         ldx PLAYER_IDLE
         stx PLAYER_SPRITE_INDEX
         rts
 @SetRight
         ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_RIGHT_ANIM2
+        cpx #PLAYER_RIGHT_ANIM2
         beq @RightFrame1
-        ldx PLAYER_RIGHT_ANIM2
+        ldx #PLAYER_RIGHT_ANIM2
         stx PLAYER_SPRITE_INDEX
         rts
 @RightFrame1
-        ldx PLAYER_RIGHT_ANIM1
+        ldx #PLAYER_RIGHT_ANIM1
         stx PLAYER_SPRITE_INDEX
         rts
 @SetLeft
         ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_LEFT_ANIM2
+        cpx #PLAYER_LEFT_ANIM2
         beq @LeftFrame1
-        ldx PLAYER_LEFT_ANIM2
+        ldx #PLAYER_LEFT_ANIM2
         stx PLAYER_SPRITE_INDEX
         rts
 @LeftFrame1
-        ldx PLAYER_LEFT_ANIM1
+        ldx #PLAYER_LEFT_ANIM1
         stx PLAYER_SPRITE_INDEX
         rts
 @SetUp
         ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_UP_ANIM2
+        cpx #PLAYER_UP_ANIM2
         beq @UpFrame1
-        ldx PLAYER_UP_ANIM2
+        ldx #PLAYER_UP_ANIM2
         stx PLAYER_SPRITE_INDEX
         rts
 @UpFrame1
-        ldx PLAYER_UP_ANIM1
+        ldx #PLAYER_UP_ANIM1
         stx PLAYER_SPRITE_INDEX
         rts
 @SetDown
         ldx PLAYER_SPRITE_INDEX
-        cpx PLAYER_DOWN_ANIM2
+        cpx #PLAYER_DOWN_ANIM2
         beq @DownFrame1
-        ldx PLAYER_DOWN_ANIM2
+        ldx #PLAYER_DOWN_ANIM2
         stx PLAYER_SPRITE_INDEX
         rts
 @DownFrame1
-        ldx PLAYER_DOWN_ANIM1
+        ldx #PLAYER_DOWN_ANIM1
         stx PLAYER_SPRITE_INDEX
         rts
 #endregion
@@ -373,9 +373,9 @@ InitSprites
         lda SPRITE_OVERFLOW
         ora #%10101000 
         sta SPRITE_OVERFLOW
-        lda COLOUR_LIGHT_BLUE
+        lda #COLOUR_LIGHT_BLUE
         sta SPRITE0_COLOUR
-        lda COLOUR_RED
+        lda #COLOUR_RED
         sta SPRITE1_COLOUR
         ldx #$4a
         stx PLAYER_X
@@ -424,13 +424,13 @@ InitCharacterSet
         lda SCREEN_CONTROL
         ora #%00010000
         sta SCREEN_CONTROL
-        ;lda COLOUR_LIGHT_BLUE
+        ;lda #COLOUR_LIGHT_BLUE
         ;sta BG_COLOUR1
-        ;lda COLOUR_WHITE
+        ;lda #COLOUR_WHITE
         ;sta BG_COLOUR2
-        ;lda COLOUR_RED
+        ;lda #COLOUR_RED
         ;sta BG_COLOUR3
-        SetBackgroundColors COLOUR_BLACK,COLOUR_LIGHT_BLUE,COLOUR_WHITE,COLOUR_RED
+        SetBackgroundColors #COLOUR_BLACK,#COLOUR_LIGHT_BLUE,#COLOUR_WHITE,#COLOUR_RED
         rts
 
 DrawLevel
@@ -500,13 +500,24 @@ CheckForSpriteCollision
         cmp #%10000010
         beq KillNPC2
         rts
+DestroyBullet
+        ;DisableSprite #%11111101
+        lda PLAYER_BULLET_EXPLOSION_COUNTER
+        cmp #0
+        bne @cont
+        lda #1
+        sta PLAYER_BULLET_EXPLOSION_COUNTER
+@cont
+        rts
 KillNPC1
         jsr DestroyBullet
         DisableSprite #%10111111
+        jsr DecPlayerLives
         rts
 KillNPC2
         jsr DestroyBullet
         DisableSprite #%01111111
+        jsr DecPlayerLives
         rts
 OpenDoor1
         jsr DestroyBullet
@@ -538,20 +549,17 @@ KillPlayer
         jsr DestroyBullet
         rts
 
-DestroyBullet
-        ;DisableSprite #%11111101
-        lda PLAYER_BULLET_EXPLOSION_COUNTER
-        cmp #0
-        bne @cont
-        lda #1
-        sta PLAYER_BULLET_EXPLOSION_COUNTER
-@cont
+
+DecPlayerLives
+        ldx PLAYER_LIVES
+        dex
+        stx PLAYER_LIVES
         rts
 
 InitPlayerState
         ldx #9
         stx PLAYER_LIVES
-        ldx PLAYER_ACTION_SHOOT
+        ldx #PLAYER_ACTION_SHOOT
         stx PLAYER_CURRENT_ACTION
         ldx #0
         stx PLAYER_ACTION_SWITCH_COOLDOWN
@@ -573,21 +581,21 @@ PlayLaser
 
 UpdateLastAimDir
         lda PLAYER_SPRITE_INDEX
-        cmp PLAYER_SHOOT_N
+        cmp #PLAYER_SHOOT_N
         beq @SetAimDir
-        cmp PLAYER_SHOOT_E
+        cmp #PLAYER_SHOOT_E
         beq @SetAimDir
-        cmp PLAYER_SHOOT_S
+        cmp #PLAYER_SHOOT_S
         beq @SetAimDir
-        cmp PLAYER_SHOOT_W
+        cmp #PLAYER_SHOOT_W
         beq @SetAimDir
-        cmp PLAYER_SHOOT_NE
+        cmp #PLAYER_SHOOT_NE
         beq @SetAimDir
-        cmp PLAYER_SHOOT_NW
+        cmp #PLAYER_SHOOT_NW
         beq @SetAimDir
-        cmp PLAYER_SHOOT_SE
+        cmp #PLAYER_SHOOT_SE
         beq @SetAimDir
-        cmp PLAYER_SHOOT_SW
+        cmp #PLAYER_SHOOT_SW
         beq @SetAimDir
         rts
 @SetAimDir
@@ -604,81 +612,81 @@ HandleAction
         jsr CheckForAction
         jsr ReadJoystick1
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_UP
+        and #PLAYER_MOVED_UP
         bne @ShootUp
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_DOWN
+        and #PLAYER_MOVED_DOWN
         bne @ShootDown
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_LEFT
+        and #PLAYER_MOVED_LEFT
         bne @ShootLeft
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_RIGHT
+        and #PLAYER_MOVED_RIGHT
         bne @ShootRight
         rts
 @ShootUp
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_RIGHT
+        and #PLAYER_MOVED_RIGHT
         bne @ShootUpRight
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_LEFT
+        and #PLAYER_MOVED_LEFT
         bne @ShootUpLeft
-        lda PLAYER_SHOOT_N
+        lda #PLAYER_SHOOT_N
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_VERT
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootUpRight
-        lda PLAYER_SHOOT_NE
+        lda #PLAYER_SHOOT_NE
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_SWNE
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootUpLeft
-        lda PLAYER_SHOOT_NW
+        lda #PLAYER_SHOOT_NW
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_NWSE
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootDown
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_RIGHT
+        and #PLAYER_MOVED_RIGHT
         bne @ShootDownRight
         lda JOYSTICK_INPUT1
-        and PLAYER_MOVED_LEFT
+        and #PLAYER_MOVED_LEFT
         bne @ShootDownLeft
-        lda PLAYER_SHOOT_S
+        lda #PLAYER_SHOOT_S
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_VERT
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootDownRight
-        lda PLAYER_SHOOT_SE
+        lda #PLAYER_SHOOT_SE
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_NWSE
         sta PLAYER_BULLET_SPRITE_INDEX        
         rts
 @ShootDownLeft
-        lda PLAYER_SHOOT_SW
+        lda #PLAYER_SHOOT_SW
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_SWNE
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootLeft
-        lda PLAYER_SHOOT_W
+        lda #PLAYER_SHOOT_W
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_HORI
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 @ShootRight
-        lda PLAYER_SHOOT_E
+        lda #PLAYER_SHOOT_E
         sta PLAYER_SPRITE_INDEX
         lda PLAYER_BULLET_HORI
         sta PLAYER_BULLET_SPRITE_INDEX
         rts
 CheckForSelectedActionChange
         lda JOYSTICK_INPUT1
-        and PLAYER_ACTION
+        and #PLAYER_ACTION
         bne @UpdateAction
         rts
 @UpdateAction
@@ -719,15 +727,15 @@ CheckForSelectedActionChange
 @ProcessActionUpdate
         jsr ResetActionSelector
         lda PLAYER_CURRENT_ACTION
-        cmp PLAYER_ACTION_SHOOT
+        cmp #PLAYER_ACTION_SHOOT
         beq SetActionTalk
-        cmp PLAYER_ACTION_TALK
+        cmp #PLAYER_ACTION_TALK
         beq SetActionUse
-        cmp PLAYER_ACTION_USE
+        cmp #PLAYER_ACTION_USE
         beq SetActionShoot
         rts
 SetActionShoot
-        ldx PLAYER_ACTION_SHOOT
+        ldx #PLAYER_ACTION_SHOOT
         stx PLAYER_CURRENT_ACTION
         jsr ResetActionSelector
         ldx BOX_SELECTOR_TL
@@ -740,7 +748,7 @@ SetActionShoot
         stx ACTION_SELECTOR_POS4
         rts
 SetActionTalk
-        ldx PLAYER_ACTION_TALK
+        ldx #PLAYER_ACTION_TALK
         stx PLAYER_CURRENT_ACTION
         jsr ResetActionSelector
         ldx BOX_SELECTOR_TL
@@ -753,7 +761,7 @@ SetActionTalk
         stx ACTION_SELECTOR_POS8
         rts
 SetActionUse
-        ldx PLAYER_ACTION_USE
+        ldx #PLAYER_ACTION_USE
         stx PLAYER_CURRENT_ACTION
         jsr ResetActionSelector
         ldx BOX_SELECTOR_TL
@@ -791,7 +799,7 @@ CheckForAction
 @ActionCanProceed
         jsr ReadJoystick
         lda JOYSTICK_INPUT
-        and PLAYER_ACTION
+        and #PLAYER_ACTION
         beq @ActCont
         jsr @Shoot
         rts
@@ -873,21 +881,21 @@ CheckForAction
         rts
 @continueProcessing
         lda PLAYER_BULLET_DIRECTION
-        cmp PLAYER_SHOOT_N
+        cmp #PLAYER_SHOOT_N
         beq @MoveBulletN
-        cmp PLAYER_SHOOT_E
+        cmp #PLAYER_SHOOT_E
         beq @MoveBulletE
-        cmp PLAYER_SHOOT_S
+        cmp #PLAYER_SHOOT_S
         beq @MoveBulletS
-        cmp PLAYER_SHOOT_W
+        cmp #PLAYER_SHOOT_W
         beq @MoveBulletW
-        cmp PLAYER_SHOOT_NE
+        cmp #PLAYER_SHOOT_NE
         beq @MoveBulletNE
-        cmp PLAYER_SHOOT_NW
+        cmp #PLAYER_SHOOT_NW
         beq @MoveBulletNW
-        cmp PLAYER_SHOOT_SE
+        cmp #PLAYER_SHOOT_SE
         beq @MoveBulletSE
-        cmp PLAYER_SHOOT_SW
+        cmp #PLAYER_SHOOT_SW
         beq @MoveBulletSW
         rts
 @MoveBulletN
@@ -1020,7 +1028,7 @@ HandleBulletExplosion
 HandleTalk
         jsr ReadJoystick
         lda JOYSTICK_INPUT
-        cmp PLAYER_ACTION
+        cmp #PLAYER_ACTION
         beq @processtalk
         jmp GameLoop
 @processtalk
