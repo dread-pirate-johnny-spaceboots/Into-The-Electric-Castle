@@ -12,6 +12,9 @@ incbin "PlayerSprites.bin"
 *=SPRITE1_DATA
 incbin "Bullet.bin"
 
+*=TITLE_CHARSET
+incbin "TitleScreenCharset.bin"
+
 *=CHARSET
 incbin "LevelGeo.bin"
 
@@ -30,7 +33,7 @@ incbin "ForeverOfTheStars.bin"
 *=DOOR_SPRITE_DATA
 incbin "Door.bin"
 
-*=SPRITE4_DATA
+*=SPRITE5_DATA
 incbin "Button.bin"
 
 incasm "Macros.asm"
@@ -41,28 +44,34 @@ incasm "Data.asm"
         stx DOOR1_OPEN_COUNTER
         stx DOOR2_OPEN_COUNTER
         stx BORDER_COLOUR
+        stx BG_COLOUR
         stx LEVEL1_TILE_COUNTER
         stx PLAYER_BULLET_EXPLOSION_COUNTER
         ldx #1
         stx PLAYER_DYING_COUNTER
-        ldx COLOUR_BLACK
-        stx BG_COLOUR
         jsr ClearScreen
-        jsr DrawTitle
         jsr InitCharacterSet
+        DisableMultiColorMode
+        SetCharacterSet #%00000011
         jsr InitPlayerState
-TitleLoop
-        jsr ReadJoystick
-        lda JOYSTICK_INPUT
-        and PLAYER_ACTION
-        bne InitGame
-        jmp TitleLoop
+;TitleLoop
+;        ldx #COLOUR_BLACK
+;        stx BORDER_COLOUR
+;        stx BG_COLOUR
+;        jsr DrawTitle
+;        jsr ReadJoystick
+;        lda JOYSTICK_INPUT
+;        and PLAYER_ACTION
+;        bne InitGame
+;        jmp TitleLoop
 InitGame
-        ldx COLOUR_BLACK
+        SetCharacterSet #%00000111
+        ldx #COLOUR_BLACK
         stx BG_COLOUR
-        ldx COLOUR_LIGHT_BLUE
+        ldx #COLOUR_GREEN
         stx TEXT_COLOUR
         jsr ClearScreen
+        DisableMultiColorMode
         jsr DrawLevel
         jsr InitSprites
 GameLoop
@@ -105,9 +114,9 @@ GameLoop
         rts
 @ActionSwitch
         lda PLAYER_CURRENT_ACTION
-        cmp PLAYER_ACTION_SHOOT
+        cmp #PLAYER_ACTION_SHOOT
         beq @HandleAction
-        cmp PLAYER_ACTION_TALK
+        cmp #PLAYER_ACTION_TALK
         beq @TriggerTalk
         
         jmp GameLoop
@@ -130,13 +139,13 @@ GameLoop
         inx
         stx PLAYER_DYING_COUNTER
         lda PLAYER_SPRITE_INDEX
-        cmp PLAYER_DYING_ANIM2
+        cmp #PLAYER_DYING_ANIM2
         beq @DyingFrame1
-        ldx PLAYER_DYING_ANIM2
+        ldx #PLAYER_DYING_ANIM2
         stx PLAYER_SPRITE_INDEX
         jmp GameLoop
 @DyingFrame1
-        ldx PLAYER_DYING_ANIM1
+        ldx #PLAYER_DYING_ANIM1
         stx PLAYER_SPRITE_INDEX
         jmp GameLoop
         rts
@@ -186,7 +195,47 @@ GameLoop
         ldx PLAYER_LIVES
         cpx #0
         beq @GameOver
+        cpx #8
+        beq @SetFGLightGreen
+        cpx #7
+        beq @SetFGLightBlue
+        cpx #6
+        beq @SetFGBlue
+        cpx #5
+        beq @SetFGYellow
+        cpx #4
+        beq @SetFGOrange
+        cpx #3
+        beq @SetFGRed
+        jmp @Respawn
+@SetFGLightGreen
+        ldx #COLOUR_LIGHT_GREEN
+        stx TEXT_COLOUR
+        jmp @Respawn
+@SetFGLightBlue
+        ldx #COLOUR_LIGHT_BLUE
+        stx TEXT_COLOUR
+        jmp @Respawn
+@SetFGBlue
+        ldx #COLOUR_BLUE
+        stx TEXT_COLOUR
+        jmp @Respawn
+@SetFGYellow
+        ldx #COLOUR_YELLOW
+        stx TEXT_COLOUR
+        jmp @Respawn
+@SetFGOrange
+        ldx #COLOUR_ORANGE
+        stx TEXT_COLOUR
+        jmp @Respawn
+@SetFGRed
+        ldx #COLOUR_RED
+        stx TEXT_COLOUR
+        jmp @Respawn
 @Respawn
+        jsr ClearScreen        
+        jsr DrawLevel
+        jsr InitSprites
         lda SPRITE_OVERFLOW
         and #%11111110
         sta SPRITE_OVERFLOW
@@ -202,11 +251,11 @@ GameLoop
 @GameOver
         jsr ClearScreen
         EnableSprites #%00000000
-        lda COLOUR_BLACK
+        lda #COLOUR_WHITE
         sta TEXT_COLOUR
-        lda COLOUR_RED
-        sta BG_COLOUR
-        PrintStr FT_GAMEOVER,#$8B,#0
+        ;lda #COLOUR_RED
+        ;sta BG_COLOUR
+        PrintStr FT_GAMEOVER,#227,#248
 @GameOverLoop
         jsr ReadJoystick
         lda JOYSTICK_INPUT
@@ -215,27 +264,33 @@ GameLoop
         jmp @GameOverLoop
         rts
 @GotoTitle
-        ldx COLOUR_BLACK
+        ldx #COLOUR_BLACK
         stx BG_COLOUR
-        ldx COLOUR_LIGHT_BLUE
+        ldx #COLOUR_LIGHT_BLUE
         stx TEXT_COLOUR
         EnableSprites #%00000000
         jsr ClearScreen
         jsr DrawTitle
-        ldx #5
+        ldx #7
         stx PLAYER_LIVES
         ldx #0
         stx PLAYER_DYING_COUNTER
-        jmp TitleLoop
+        ;jmp TitleLoop
+        jmp InitGame
 NextLevel
         jsr ClearScreen
         EnableSprites #%00000000
-        lda COLOUR_WHITE
-        sta TEXT_COLOUR
-        DisableMultiColorMode
+        ;lda COLOUR_WHITE
+        ;sta TEXT_COLOUR
+        
         SetCharacterSet #%00000101
         jsr DrawForever
         PrintStr FT_LEVEL1,#142,#$50
+        ldx PLAYER_LIVES
+        cpx #1
+        beq NextLevelLoop
+        dex
+        stx PLAYER_LIVES
 NextLevelLoop
         WaitForRaster #250
         SetCharacterSet #%000000111    
@@ -252,9 +307,11 @@ NextLevelLoop
 InitNewLevel
         jsr ClearScreen        
         SetCharacterSet #%00000111
-        EnableMultiColorMode
-        SetTextColor COLOUR_LIGHT_BLUE
-        SetBackgroundColors COLOUR_BLACK,COLOUR_LIGHT_BLUE,COLOUR_WHITE,COLOUR_RED
+        ;EnableMultiColorMode
+        ;SetTextColor COLOUR_LIGHT_BLUE
+        ;lda COLOUR_LIGHT_BLUE
+        ;sta TEXT_COLOUR
+        ;SetBackgroundColors COLOUR_BLACK,COLOUR_LIGHT_BLUE,COLOUR_WHITE,COLOUR_RED
         jsr DrawLevel
         jsr InitSprites
 @Exit
@@ -317,7 +374,7 @@ FT_LEVEL2P3 text 'Look around, but linger not. Where I lead you will follow. Mar
           byte 00
 FT_LEVEL2P4 text 'You have a task! To release yourselves from this web of wisdom, this knotted maze of delerium you must enter the nuclear portals of the electric castle!'
           byte 00
-FT_LEVEL3 text 'It is time to reflect upon your ego self. Nowhere to hide when the walls echo the you that we all see. From these wind torn ramparts we survey a thousand futures. Breath deep the intoxicating aroma of endless entwined emotions. The surreal search endures.'
+FT_LEVEL3 text 'It is time to reflect upon your ego self. Nowhere to hide when the walls echo the you that we all see. From these wind torn ramparts we survey a thousand futures. Breath deep the intoxicating aroma of endless entwined emotions- the surreal search endures.'
           byte 00
 FT_LEVEL4 text "Ah my friends! So light of foot! So swift! Youve come this far. And now, here beneath the ancient omniscient boughs of the Decision Tree, one of you must depart this world of flesh. Only two may continue. Only you can decide!"
           byte 00
@@ -327,11 +384,11 @@ FT_LEVEL6 text 'At last you enter the Electric Castle. Here in this vast hall wh
           byte 00
 FT_LEVEL7 text 'You craved the answer but can you bear the truth? The futures doored ingress! What lies beyond? Guide your choice with collective wisdom for one gate severs all connections. One step away from the dreamworld of everlasting ebony you call oblivion.'
           byte 00
-FT_END1 text 'I am of the stars. I am called forever. It is cold beyond your sun where we come from. We peopled your planet. But the final experiment has failed. The earth has died. Your world is at rest. But I offer you this. A final solution. A chance to survive.'
+FT_END1 text 'I am of the stars. I am called Forever. It is cold beyond your sun where we come from. We peopled your planet. But the final experiment has failed. The earth has died. Your world is at rest. But I offer you this. A final solution. A chance to survive.'
           byte 00
 FT_END2 text 'We can save your ill fated race who are lost upon the ocean of space. Through their eyes we will see. With their hands we will create. In their world we will be free. With our minds we will shape their fate. Make us whole migrator soul!'
           byte 00
 FT_END3 text 'THE FATE OF THE FINAL EXPERIMENT IS NOW IN YOUR HANDS'
         byte 00
-FT_GAMEOVER text 'The experiment is over. I grow weary. So tired. Let the dream of confusion lead you into the virgin light. Be all seeing, be brave. Begone!'
+FT_GAMEOVER text 'The experiment is over.                 I grow weary. So tired.                                                 Let the dream of confusion lead you into           the virgin light.               Be all seeing, be brave. Begone!'
             byte 00
