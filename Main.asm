@@ -37,6 +37,7 @@ incbin "Door.bin"
 incbin "Button.bin"
 
 incasm "Macros.asm"
+*=STATIC_DATA_BASE
 incasm "Data.asm"
 
 *=$0820
