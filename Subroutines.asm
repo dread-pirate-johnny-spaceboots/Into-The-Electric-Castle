@@ -569,6 +569,10 @@ PlayZap
 PlayLaser
         PlaySound #25,#20,#44,#88,#3,#33
         rts
+
+PlayDialogueTone
+        PlaySound #6,#0,#60,#32,#2,#33
+        rts
 #endregion
 
 UpdateLastAimDir
@@ -1017,60 +1021,384 @@ HandleBulletExplosion
 @Cont
         rts
 
+*=$6000
+; Dialogue system relocated to keep main code block under sprite data boundary
 HandleTalk
+        lda DIALOGUE_STATE
+        beq @CheckStart
+        jsr UpdateDialogue
+        jmp GameLoop
+@CheckStart
         jsr ReadJoystick
         lda JOYSTICK_INPUT
-        cmp PLAYER_ACTION
-        beq @processtalk
-        jmp GameLoop
-@processtalk
+        and PLAYER_ACTION
+        beq @ReleaseCheck
+        lda DIALOGUE_BUTTON_LATCH
+        bne @ToGame
+        lda #1
+        sta DIALOGUE_BUTTON_LATCH
         sec
         lda PLAYER_X
-        
         sbc NPC1_X
         cmp #16
         bcc @CheckNPC1Y
         cmp #239
         beq @CheckNPC2
         bcs @CheckNPC1Y
-@conttalk
-        jmp GameLoop
+        jmp @CheckNPC2
 @CheckNPC1Y
         sec
         lda PLAYER_Y
-        SBC NPC1_Y
-        CMP #16
-        BCC @TalkToNPC1
+        sbc NPC1_Y
+        cmp #16
+        bcc @TalkToNPC1
         cmp #239
         beq @CheckNPC2
         bcs @TalkToNPC1
+        jmp @CheckNPC2
+@TalkToNPC1
+        lda #<NPC1_DIALOGUE
+        ldx #>NPC1_DIALOGUE
+        jsr StartDialogue
+        jmp GameLoop
 @CheckNPC2
         sec
         lda PLAYER_X
-        
         sbc NPC2_X
         cmp #16
         bcc @CheckNPC2Y
         cmp #239
-        beq @conttalk
+        beq @ToGame
         bcs @CheckNPC2Y
+        jmp @ToGame
 @CheckNPC2Y
         sec
         lda PLAYER_Y
-        SBC NPC2_Y
-        CMP #16
-        BCC @TalkToNPC2
+        sbc NPC2_Y
+        cmp #16
+        bcc @TalkToNPC2
         cmp #239
         bcs @TalkToNPC2
-        jmp GameLoop
-@TalkToNPC1
-        jsr @DrawDialogue
-        rts
+        jmp @ToGame
 @TalkToNPC2
-        jsr @DrawDialogue
+        lda #<NPC2_DIALOGUE
+        ldx #>NPC2_DIALOGUE
+        jsr StartDialogue
+        jmp GameLoop
+@ReleaseCheck
+        lda #0
+        sta DIALOGUE_BUTTON_LATCH
+@ToGame
+        jmp GameLoop
+
+StartDialogue
+        sta DIALOGUE_TEXT_PTR
+        stx DIALOGUE_TEXT_PTR+1
+        jsr DrawDialogueWindow
+        lda #0
+        sta DIALOGUE_COLUMN
+        sta DIALOGUE_CURRENT_ROW
+        sta DIALOGUE_DELAY_COUNTER
+        sta DIALOGUE_TONE_COUNTER
+        sta DIALOGUE_INDICATOR_COUNTER
+        sta DIALOGUE_INDICATOR_VISIBLE
+        lda #0
+        jsr SetDialogueLinePointers
+        lda #1
+        sta DIALOGUE_STATE
+        sta DIALOGUE_BUTTON_LATCH
         rts
-@DrawDialogue
-        
+
+UpdateDialogue
+        jsr ReadJoystick
+        lda JOYSTICK_INPUT
+        and PLAYER_ACTION
+        beq @NoPress
+        lda DIALOGUE_BUTTON_LATCH
+        bne @HandleState
+        lda #1
+        sta DIALOGUE_BUTTON_LATCH
+        lda DIALOGUE_STATE
+        cmp #1
+        beq @SkipToEnd
+        cmp #2
+        beq @CloseWindow
+        jmp @HandleState
+@SkipToEnd
+        jsr CompleteDialogueInstant
+        jmp @HandleState
+@CloseWindow
+        jsr RestoreDialogueWindow
+        rts
+@NoPress
+        lda #0
+        sta DIALOGUE_BUTTON_LATCH
+@HandleState
+        lda DIALOGUE_STATE
+        cmp #1
+        beq @RenderNext
+        cmp #2
+        beq @Blink
+        rts
+@RenderNext
+        lda DIALOGUE_DELAY_COUNTER
+        beq @RenderChar
+        dec DIALOGUE_DELAY_COUNTER
+        rts
+@RenderChar
+        lda DIALOGUE_PRINT_DELAY
+        sta DIALOGUE_DELAY_COUNTER
+        ldy #0
+        lda (DIALOGUE_TEXT_PTR),y
+        cmp #0
+        beq @FinishDialogue
+        cmp DIALOGUE_NEWLINE
+        beq @HandleNewline
+        jsr OutputDialogueChar
+        jsr AdvanceDialogueTextPointer
+        jsr MaybePlayDialogueTone
+        rts
+@FinishDialogue
+        jsr CompleteDialogue
+        rts
+@HandleNewline
+        jsr AdvanceDialogueTextPointer
+        jsr NextDialogueLine
+        lda #0
+        sta DIALOGUE_DELAY_COUNTER
+        rts
+@Blink
+        lda DIALOGUE_INDICATOR_COUNTER
+        beq @Toggle
+        dec DIALOGUE_INDICATOR_COUNTER
+        sta DIALOGUE_INDICATOR_COUNTER
+        rts
+@Toggle
+        lda DIALOGUE_INDICATOR_VISIBLE
+        beq @Show
+        jsr HideDialogueIndicator
+        lda #0
+        sta DIALOGUE_INDICATOR_VISIBLE
+        lda DIALOGUE_BLINK_INTERVAL
+        sta DIALOGUE_INDICATOR_COUNTER
+        rts
+@Show
+        jsr ShowDialogueIndicator
+        lda #1
+        sta DIALOGUE_INDICATOR_VISIBLE
+        lda DIALOGUE_BLINK_INTERVAL
+        sta DIALOGUE_INDICATOR_COUNTER
+        rts
+
+CompleteDialogueInstant
+        lda #0
+        sta DIALOGUE_DELAY_COUNTER
+@FastForwardLoop
+        ldy #0
+        lda (DIALOGUE_TEXT_PTR),y
+        cmp #0
+        beq @FinishFast
+        cmp DIALOGUE_NEWLINE
+        beq @SkipNewline
+        jsr OutputDialogueChar
+        jsr AdvanceDialogueTextPointer
+        jmp @FastForwardLoop
+@SkipNewline
+        jsr AdvanceDialogueTextPointer
+        jsr NextDialogueLine
+        jmp @FastForwardLoop
+@FinishFast
+        jsr CompleteDialogue
+        rts
+
+CompleteDialogue
+        lda #2
+        sta DIALOGUE_STATE
+        lda #0
+        sta DIALOGUE_DELAY_COUNTER
+        lda DIALOGUE_BLINK_INTERVAL
+        sta DIALOGUE_INDICATOR_COUNTER
+        jsr ShowDialogueIndicator
+        lda #1
+        sta DIALOGUE_INDICATOR_VISIBLE
+        rts
+
+DrawDialogueWindow
+        ldx #0
+@BackupLoop
+        lda DIALOGUE_WINDOW_TOP,x
+        sta DIALOGUE_SCREEN_BACKUP,x
+        lda DIALOGUE_COLOUR_BASE,x
+        sta DIALOGUE_COLOUR_BACKUP,x
+        inx
+        cpx #DIALOGUE_WINDOW_CHAR_COUNT
+        bne @BackupLoop
+        ldx #0
+@FillLoop
+        lda #32
+        sta DIALOGUE_WINDOW_TOP,x
+        lda DIALOGUE_TEXT_COLOUR
+        sta DIALOGUE_COLOUR_BASE,x
+        inx
+        cpx #DIALOGUE_WINDOW_CHAR_COUNT
+        bne @FillLoop
+        lda DIALOGUE_BORDER_TL
+        sta DIALOGUE_WINDOW_TOP
+        lda DIALOGUE_BORDER_TR
+        sta DIALOGUE_WINDOW_TOP + 39
+        lda DIALOGUE_BORDER_BL
+        sta DIALOGUE_WINDOW_BOTTOM
+        lda DIALOGUE_BORDER_BR
+        sta DIALOGUE_WINDOW_BOTTOM + 39
+        ldx #1
+@TopRow
+        cpx #39
+        beq @BottomRow
+        lda DIALOGUE_BORDER_HORIZONTAL
+        sta DIALOGUE_WINDOW_TOP,x
+        inx
+        bne @TopRow
+@BottomRow
+        ldx #1
+@BottomRowFill
+        cpx #39
+        beq @Verticals
+        lda DIALOGUE_BORDER_HORIZONTAL
+        sta DIALOGUE_WINDOW_BOTTOM,x
+        inx
+        bne @BottomRowFill
+@Verticals
+        lda DIALOGUE_BORDER_VERTICAL
+        sta DIALOGUE_WINDOW_TOP + 40
+        sta DIALOGUE_WINDOW_TOP + 40 + 39
+        sta DIALOGUE_WINDOW_TOP + 80
+        sta DIALOGUE_WINDOW_TOP + 80 + 39
+        sta DIALOGUE_WINDOW_TOP + 120
+        sta DIALOGUE_WINDOW_TOP + 120 + 39
+        rts
+
+RestoreDialogueWindow
+        ldx #0
+@RestoreLoop
+        lda DIALOGUE_SCREEN_BACKUP,x
+        sta DIALOGUE_WINDOW_TOP,x
+        lda DIALOGUE_COLOUR_BACKUP,x
+        sta DIALOGUE_COLOUR_BASE,x
+        inx
+        cpx #DIALOGUE_WINDOW_CHAR_COUNT
+        bne @RestoreLoop
+        lda #0
+        sta DIALOGUE_STATE
+        sta DIALOGUE_COLUMN
+        sta DIALOGUE_CURRENT_ROW
+        sta DIALOGUE_DELAY_COUNTER
+        sta DIALOGUE_TONE_COUNTER
+        sta DIALOGUE_INDICATOR_COUNTER
+        sta DIALOGUE_INDICATOR_VISIBLE
+        lda #1
+        sta DIALOGUE_BUTTON_LATCH
+        rts
+
+AdvanceDialogueTextPointer
+        lda DIALOGUE_TEXT_PTR
+        clc
+        adc #1
+        sta DIALOGUE_TEXT_PTR
+        lda DIALOGUE_TEXT_PTR+1
+        adc #0
+        sta DIALOGUE_TEXT_PTR+1
+        rts
+
+AdvanceDialogueScreenPointer
+        lda DIALOGUE_SCREEN_PTR
+        clc
+        adc #1
+        sta DIALOGUE_SCREEN_PTR
+        lda DIALOGUE_SCREEN_PTR+1
+        adc #0
+        sta DIALOGUE_SCREEN_PTR+1
+        lda DIALOGUE_COLOUR_PTR
+        clc
+        adc #1
+        sta DIALOGUE_COLOUR_PTR
+        lda DIALOGUE_COLOUR_PTR+1
+        adc #0
+        sta DIALOGUE_COLOUR_PTR+1
+        lda DIALOGUE_COLUMN
+        clc
+        adc #1
+        sta DIALOGUE_COLUMN
+        cmp #DIALOGUE_TEXT_WIDTH
+        bcc @DoneAdvance
+        jsr NextDialogueLine
+@DoneAdvance
+        rts
+
+NextDialogueLine
+        lda DIALOGUE_CURRENT_ROW
+        cmp #DIALOGUE_LAST_ROW
+        bcs @Clamp
+        inc DIALOGUE_CURRENT_ROW
+        lda DIALOGUE_CURRENT_ROW
+        jsr SetDialogueLinePointers
+        rts
+@Clamp
+        lda #DIALOGUE_LAST_ROW
+        sta DIALOGUE_CURRENT_ROW
+        lda DIALOGUE_CURRENT_ROW
+        jsr SetDialogueLinePointers
+        rts
+
+SetDialogueLinePointers
+        tay
+        tya
+        asl
+        tay
+        lda DialogueScreenLinePointers,y
+        sta DIALOGUE_SCREEN_PTR
+        lda DialogueScreenLinePointers+1,y
+        sta DIALOGUE_SCREEN_PTR+1
+        lda DialogueColourLinePointers,y
+        sta DIALOGUE_COLOUR_PTR
+        lda DialogueColourLinePointers+1,y
+        sta DIALOGUE_COLOUR_PTR+1
+        lda #0
+        sta DIALOGUE_COLUMN
+        rts
+
+OutputDialogueChar
+        ldy #0
+        sta (DIALOGUE_SCREEN_PTR),y
+        lda DIALOGUE_TEXT_COLOUR
+        sta (DIALOGUE_COLOUR_PTR),y
+        jsr AdvanceDialogueScreenPointer
+        rts
+
+MaybePlayDialogueTone
+        lda DIALOGUE_TONE_COUNTER
+        clc
+        adc #1
+        sta DIALOGUE_TONE_COUNTER
+        cmp DIALOGUE_TONE_INTERVAL
+        bcc @ReturnTone
+        lda #0
+        sta DIALOGUE_TONE_COUNTER
+        jsr PlayDialogueTone
+@ReturnTone
+        rts
+
+ShowDialogueIndicator
+        lda DIALOGUE_INDICATOR_CHAR
+        sta DIALOGUE_INDICATOR_POSITION
+        lda DIALOGUE_TEXT_COLOUR
+        sta DIALOGUE_INDICATOR_COLOUR_POS
+        rts
+
+HideDialogueIndicator
+        lda #32
+        sta DIALOGUE_INDICATOR_POSITION
+        lda DIALOGUE_TEXT_COLOUR
+        sta DIALOGUE_INDICATOR_COLOUR_POS
         rts
 ToggleTiles
         ;ldx LEVEL1_TILE_COUNTER
